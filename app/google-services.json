@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "85234600859",
+    "project_id": "medcopilot9",
+    "storage_bucket": "medcopilot9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:85234600859:android:cecb564c85c100935eef3e",
+        "android_client_info": {
+          "package_name": "com.example.medcopilot"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBW_puyE5jq8CsjUo82nJFpTuy0-AIA7k0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
