@@ -104,8 +104,9 @@ import com.example.medcopilot.util.GoogleSignInUtils
                     if (message.isNotBlank()) {
                         Log.d("ChatScreen", "Sending message: $message")
                         messages += message
-                        message = ""
+
                         entryScreenViewModel.getChatMessages(message)
+                        message = ""
                     }
                 },
                 modifier = Modifier
