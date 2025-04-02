@@ -30,7 +30,7 @@ class NetworkModule {
     @Provides
     fun provideRetrofit(client: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BuildConfig.API_URL)
+            .baseUrl("https://mcapisvc2.azurewebsites.net")
             .client(client) // Use custom OkHttpClient
             .addConverterFactory(GsonConverterFactory.create())
             .build()
