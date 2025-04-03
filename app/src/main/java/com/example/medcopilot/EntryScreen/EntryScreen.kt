@@ -14,7 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ThumbDown
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.outlined.ContentCopy
@@ -48,14 +47,31 @@ import androidx.compose.material.icons.filled.MicNone
 import androidx.compose.ui.input.pointer.pointerInput
 import java.util.Locale
 import android.Manifest
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Send
+import androidx.compose.ui.graphics.Brush
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.PermissionStatus
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.Send
+import androidx.compose.material.icons.outlined.Search
+
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ChatScreen() {
+
+
+
     val entryScreenViewModel: EntryScreenViewModel = hiltViewModel()
+
+    val responses =
+        entryScreenViewModel.chats.collectAsState(emptyList())  // Corrected variable // collected from the database
+
     var message by remember { mutableStateOf("") }
     val response = entryScreenViewModel.chatMessages.collectAsState()
     var messages by remember { mutableStateOf(emptyList<Pair<String, Boolean>>()) } // Boolean to track user/AI messages
@@ -63,7 +79,13 @@ fun ChatScreen() {
     val listState = rememberLazyListState()
     val context = LocalContext.current
 
+    var selectedItemIndex = entryScreenViewModel.selectedItem.collectAsState(0)
+    val isLoading =
+        entryScreenViewModel.isLoading.collectAsState(initial = false) // Track loading state
     // Permission handling
+
+    val firstLoad = entryScreenViewModel.firstLoad.collectAsState()
+
     val permissionState = rememberPermissionState(permission = Manifest.permission.RECORD_AUDIO)
 
     // Speech recognition states
@@ -131,17 +153,22 @@ fun ChatScreen() {
                     override fun onResults(results: Bundle?) {
                         val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                         if (!matches.isNullOrEmpty()) {
-                            message = matches[0]
+                            message += " " + matches[0]
+                            Log.d("messageis ",message)
                         }
                         isListening = false
                     }
 
                     override fun onPartialResults(partialResults: Bundle?) {
                         val matches = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                        if (!matches.isNullOrEmpty()) {
-                            message = matches[0]
-                        }
+//                        if (!matches.isNullOrEmpty()) {
+//                            val newPart = matches[0]
+//                            if (!message.endsWith(newPart)) { // Avoid excessive appending
+//                                message += " $newPart"
+//                            }
+//                        }
                     }
+
 
                     override fun onEvent(eventType: Int, params: Bundle?) {
                         // Event occurred
@@ -212,19 +239,21 @@ fun ChatScreen() {
     var selectedFeedbackOption by remember { mutableStateOf<String?>(null) }
     var feedbackText by remember { mutableStateOf("") }
 
-    // Auto-scroll to the latest message
-    LaunchedEffect(response.value) {
-        Log.d("ChatScreen", "Response: ${response.value}")
-        if (!response.value.answer.isNullOrEmpty() && response.value.input != "Initial input") {
+    LaunchedEffect(response.value) {  // Fix: React to response updates
+        if (!response.value.answer.equals("") && !response.value.input.equals("Initial input")) {
             entryScreenViewModel.onEvent(ChatGenEvent.OnAddChatGenClick(response.value))
-
-            // Only add the AI response here, not the user message
-            messages = messages + (response.value.answer to false)
-
-            listState.animateScrollToItem(messages.size - 1)
-            responseReceived = true
         }
     }
+
+    LaunchedEffect(selectedItemIndex.value) {
+        val index = responses.value.indexOfFirst { it.id == selectedItemIndex.value }
+        if (index != -1) listState.animateScrollToItem(index)
+    }
+
+    LaunchedEffect(responses.value) {
+        listState.animateScrollToItem(if(responses.value.size - 1<0) 0 else responses.value.size - 1)
+    }
+
 
 
     // Feedback Dialog
@@ -320,119 +349,8 @@ fun ChatScreen() {
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .background(Color(0xFFF5F5F5))
-    ) {
-        // App Logo
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_app_logo),
-                contentDescription = "App Logo",
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color.White)
-                    .padding(8.dp),
-                contentScale = ContentScale.Fit
-            )
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Chat messages list
-        LazyColumn(
-            modifier = Modifier.weight(1f),
-            state = listState
-        ) {
-            items(messages) { (msg, isUser) ->
-                Column {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                            .shadow(4.dp, shape = RoundedCornerShape(12.dp))
-                            .background(if (isUser) Color(0xFF6200EA) else Color.White, shape = RoundedCornerShape(12.dp))
-                            .padding(16.dp),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Text(
-                            text = msg,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = if (isUser) Color.White else Color.Black,
-                            textAlign = TextAlign.Start
-                        )
-                    }
-
-                    // Add action buttons only for AI responses
-                    if (!isUser) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            // Like button
-                            IconButton(
-                                onClick = { showFeedbackDialog = true },
-                                modifier = Modifier.size(36.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.ThumbUp,
-                                    contentDescription = "Like",
-                                    tint = Color(0xFF4CAF50),
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-
-                            // Dislike button
-                            IconButton(
-                                onClick = { showFeedbackDialog = true },
-                                modifier = Modifier.size(36.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.ThumbDown,
-                                    contentDescription = "Dislike",
-                                    tint = Color(0xFFF44336),
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-
-                            // Copy button
-                            IconButton(
-                                onClick = {
-                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                    val clip = ClipData.newPlainText("Response", msg)
-                                    clipboard.setPrimaryClip(clip)
-                                    Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
-                                },
-                                modifier = Modifier.size(36.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.ContentCopy,
-                                    contentDescription = "Copy",
-                                    tint = Color(0xFF2196F3),
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Predefined Questions (Hidden after first response)
-        if (!responseReceived) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (!firstLoad.value) {
             val questions = listOf(
                 "What is the best modality to screen for Barrett's esophagus?",
                 "What causes Crohn's?",
@@ -440,20 +358,23 @@ fun ChatScreen() {
                 "Which endoscopic procedures are high-risk?"
             )
 
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                items(questions) { question ->
+                questions.forEach { question ->
                     Button(
                         onClick = {
-                            // Add user message first, then get response
                             messages = messages + (question to true)
                             entryScreenViewModel.getChatMessages(question)
                             responseReceived = true
+                            entryScreenViewModel.setFirstLoadTrue()
                         },
                         modifier = Modifier
-                            .fillMaxWidth(0.9f)
+                            .fillMaxWidth()
                             .padding(8.dp)
                             .shadow(6.dp, shape = RoundedCornerShape(16.dp))
                             .clip(RoundedCornerShape(16.dp)),
@@ -469,99 +390,163 @@ fun ChatScreen() {
                     }
                 }
             }
+        } else {
+            // Chat messages list
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 72.dp), // Ensure space for the input box
+                state = listState
+            ) {
+                items(responses.value) { msg ->
+                    ChatItemBox(
+                        input = msg.input ?: "",
+                        output = msg.output ?: ""
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        IconButton(
+                            onClick = { showFeedbackDialog = true },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ThumbUp,
+                                contentDescription = "Like",
+                                tint = Color(0xFF4CAF50),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        IconButton(
+                            onClick = { showFeedbackDialog = true },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ThumbDown,
+                                contentDescription = "Dislike",
+                                tint = Color(0xFFF44336),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        IconButton(
+                            onClick = {
+                                val clipboard =
+                                    context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                val clip = ClipData.newPlainText("Response", msg.output)
+                                clipboard.setPrimaryClip(clip)
+                                Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT)
+                                    .show()
+                            },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.ContentCopy,
+                                contentDescription = "Copy",
+                                tint = Color(0xFF2196F3),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
+            }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Input field and send button
+        // Input field and send button (Always visible)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .shadow(6.dp, shape = RoundedCornerShape(24.dp))
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 16.dp, vertical = 12.dp) // Margin for lift-off effect
+                .shadow(8.dp, RoundedCornerShape(24.dp)) // Official Google-style shadow
                 .clip(RoundedCornerShape(24.dp))
-                .background(Color.White)
-                .padding(horizontal = 16.dp, vertical = 14.dp)
+                .background(Color(0xFFF1F3F4)) // Light gray background like Google Search
+                .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                BasicTextField(
-                    value = message,
-                    onValueChange = { message = it },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 8.dp),
-                    textStyle = LocalTextStyle.current.copy(fontSize = 18.sp, color = Color.Black),
-                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
-                    keyboardActions = KeyboardActions(onSend = {
-                        if (message.isNotBlank()) {
-                            // Add user message to the list first, then get response
-                            messages = messages + (message to true)
-                            entryScreenViewModel.getChatMessages(message)
-                            message = ""
-                            responseReceived = true
-                        }
-                    })
-                )
-
-                // Mic icon with long press gesture for speech to text
                 Icon(
-                    imageVector = if (isListening) Icons.Filled.Mic else Icons.Filled.MicNone,
-                    contentDescription = "Mic Icon",
-                    modifier = Modifier
-                        .size(28.dp)
-                        .pointerInput(Unit) {
-                            detectTapGestures(
-                                onLongPress = { startSpeechRecognition() },
-                                onPress = {
-                                    awaitRelease()
-                                    if (isListening) stopSpeechRecognition()
-                                }
-                            )
-                        }
-                        .background(Color.White, shape = CircleShape)
-                        .padding(2.dp),
-                    tint = if (isListening) Color.Red else Color.Black
+                    imageVector = Icons.Outlined.Search,
+                    contentDescription = "Search Icon",
+                    tint = Color.Gray,
+                    modifier = Modifier.size(24.dp)
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                // Send button
+                BasicTextField(
+                    value = message,
+                    onValueChange = { message = it },
+                    modifier = Modifier.weight(1f),
+                    textStyle = LocalTextStyle.current.copy(fontSize = 16.sp, color = Color.Black),
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
+                    keyboardActions = KeyboardActions(onSend = {
+                        if (message.isNotBlank()) {
+                            messages = messages + (message to true)
+                            entryScreenViewModel.getChatMessages(message)
+                            message = ""
+                            responseReceived = true
+                            entryScreenViewModel.setFirstLoadTrue()
+                        }
+                    }),
+                    decorationBox = { innerTextField ->
+                        if (message.isEmpty()) {
+                            Text("Ask me...", color = Color.Gray, fontSize = 16.sp)
+                        }
+                        innerTextField()
+                    }
+                )
+
+                if (isLoading.value) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .padding(start = 8.dp)
+                    )
+                }
+                // Voice Search Icon (Mic)
+                Icon(
+                    imageVector = if (isListening) Icons.Filled.Mic else Icons.Outlined.Mic,
+                    contentDescription = "Voice Search",
+                    tint = if (isListening) Color.Red else Color.Gray,
+                    modifier = Modifier
+                        .size(28.dp)
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onTap = {
+                                    if (!isListening) startSpeechRecognition()
+                                    else stopSpeechRecognition()
+                                }
+                            )
+                        }
+
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // Send Button
                 Image(
                     painter = painterResource(id = R.drawable.ic_send),
-                    contentDescription = "Send Icon",
+                    contentDescription = "Send",
                     modifier = Modifier
                         .size(28.dp)
                         .clickable {
                             if (message.isNotBlank()) {
-                                Log.d("ChatScreen", "Sending message: $message")
-                                // Add user message to the list first, then get response
                                 messages = messages + (message to true)
                                 entryScreenViewModel.getChatMessages(message)
                                 message = ""
                                 responseReceived = true
+                                entryScreenViewModel.setFirstLoadTrue()
                             }
                         }
-                        .background(Color.White)
-                        .padding(6.dp)
                 )
             }
         }
 
-        // Speech recognition indicator
-        if (isListening) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Listening...",
-                    color = Color(0xFF6200EA),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
+
     }
 }
 
@@ -569,4 +554,61 @@ fun ChatScreen() {
 @Composable
 fun ChatScreenPreview() {
     ChatScreen()
+}
+
+@Composable
+fun ChatItemBox(input: String, output: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(Color(0xFFF3F8FF), Color(0xFFE3ECF9))
+                ),
+                RoundedCornerShape(16.dp)
+            )
+            .padding(16.dp)
+    ) {
+        Column {
+            ChatBubble(text = "Input: $input", color = Color(0xFF6200EA), textColor = Color.White) // Soft Blue
+            Spacer(modifier = Modifier.height(8.dp))
+            GptResponse(text = "Output: $output", color = Color.White, textColor = Color.Black) // Deep Slate Blue
+        }
+    }
+}
+
+@Composable
+fun ChatBubble(text: String, color: Color, textColor: Color) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(color, RoundedCornerShape(12.dp))
+            .padding(12.dp)
+    ) {
+        Text(
+            text = text,
+            color = textColor,
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+            textAlign = TextAlign.Start
+        )
+    }
+}
+
+@Composable
+fun GptResponse(text: String, color: Color, textColor: Color){
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(color, RoundedCornerShape(12.dp))
+            .padding(12.dp)
+    ) {
+        Text(
+            text = text,
+            color = textColor,
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+            textAlign = TextAlign.Start
+        )
+
+    }
 }
