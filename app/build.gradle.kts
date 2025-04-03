@@ -59,6 +59,9 @@ dependencies {
     val lifecycleVersion = "2.6.1"
     val composeVersion = "1.5.0"
 
+    implementation("androidx.compose.material:material-icons-extended:1.5.4")
+
+
     // Room Database
     implementation("androidx.room:room-ktx:$roomVersion")
     implementation("androidx.room:room-runtime:$roomVersion")

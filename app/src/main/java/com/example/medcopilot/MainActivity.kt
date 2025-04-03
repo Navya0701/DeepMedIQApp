@@ -6,7 +6,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,15 +17,22 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -85,15 +95,34 @@ fun MedCopilotApp() {
             ModalDrawerSheet(
                 modifier = Modifier.width(280.dp)
             ) {
-                Text(
-                    "MedCopilot",
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(16.dp)
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_app_logo),
+                        contentDescription = "App Logo",
+                        modifier = Modifier.size(150.dp),
+                        contentScale = ContentScale.Fit // Ensures full image display without extra space
+                    )
+                }
 
                 // Drawer items
-                dbChats.value.forEach() { item ->
-                    ChatItemBox(id = item.id.toString(), input = item.input?:"", output = item.output?:"")
+                LazyColumn {
+                    items(dbChats.value) { item ->
+                        ChatItemBox(
+                            id = item.id.toString(),
+                            input = item.input ?: "",
+                            output = item.output ?: "",
+                            onClick = {
+                                entryScreenViewModel.onItemClick(item.id)
+                                scope.launch { drawerState.close() } // Close the drawer
+                            },
+                            timeStamp = item.timeStamp.toString()
+                        )
+                    }
                 }
 
             }
@@ -102,7 +131,15 @@ fun MedCopilotApp() {
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
-                    title = { Text(selectedScreen) },
+                    title = {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_app_logo),
+                            contentDescription = "App Logo",
+                            modifier = Modifier.size(150.dp),
+                            contentScale = ContentScale.Fit // Ensures full image display without extra space
+                        )
+
+                    },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(imageVector = Icons.Default.Menu, contentDescription = "Menu")
@@ -128,6 +165,7 @@ fun MedCopilotApp() {
                 )
             }
 
+
         ) { innerPadding ->
             // Main content area
             Column(modifier = Modifier.padding(innerPadding)) {
@@ -140,27 +178,33 @@ fun MedCopilotApp() {
 }
 
 
-// these are displayed in the already searched chat section
 @Composable
-fun ChatItemBox(id: String, input: String, output: String) {
+fun ChatItemBox(
+    id: String,
+    input: String,
+    output: String,
+    timeStamp: String,
+    onClick:()-> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
             .border(2.dp, Color.Gray, RoundedCornerShape(12.dp))
             .padding(12.dp)
+            .clickable{
+                onClick()
+            }
     ) {
         Column {
-            Text(text = "ID: $id", color = Color.Blue, style = MaterialTheme.typography.bodySmall)
+            Text(text = " $input", color = Color.Black, style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = "Input: $input", color = Color.Black, style = MaterialTheme.typography.bodyMedium)
-            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = timeStamp, color = Color.Gray, style = MaterialTheme.typography.bodySmall)
         }
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun PreviewChatItemBox() {
-    ChatItemBox(id = "123", input = "What is insomnia?", output = "Insomnia is a sleep disorder...")
+fun AppLogo(){
+
 }

@@ -13,5 +13,7 @@ data class Chat(
     @ColumnInfo(name = "input")
     val input: String? = "",
     @ColumnInfo(name = "output")
-    val output: String? = ""
+    val output: String? = "",
+    @ColumnInfo(name = "timestamp")
+    val timeStamp: String? = ""
 )
