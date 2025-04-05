@@ -1,5 +1,6 @@
 package com.example.medcopilot
 
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -35,6 +36,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.medcopilot.EntryScreen.ChatScreen
 import com.example.medcopilot.EntryScreen.EntryScreenViewModel
@@ -43,22 +46,107 @@ import com.example.medcopilot.util.GoogleSignInUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import org.vosk.Recognizer
+import org.vosk.Model
+import org.vosk.android.SpeechService
+import org.vosk.android.RecognitionListener
+import android.Manifest
+import android.content.res.AssetManager
+import android.util.Log
+import java.io.File
+import java.io.FileOutputStream
 
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), RecognitionListener {
+
     @Inject
     lateinit var chatAPI: ChatAPI
+    lateinit var assetManager: AssetManager
+
+    private var speechService: SpeechService? = null
+    private lateinit var model: Model
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Request microphone permission
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), 1)
+        }
+
         setContent {
             MedCopilotApp()
         }
-
     }
+
+    private fun initVosk() {
+        Thread {
+
+            // Initialize the asset manager
+            assetManager = assets
+
+            try {
+                // 1. First debug what's in your assets
+                Log.d("AssetsDebug", "Root assets contents:")
+                assetManager.list("")?.forEach { item ->
+                    Log.d("AssetsDebug", "- $item")
+
+                    assetManager.list(item)?.let { subItems ->
+                        if (subItems.isNotEmpty()) {
+                            Log.d("AssetsDebug", "  (Directory containing ${subItems.size} items)")
+                        }
+                    }
+                }
+
+                // 2. Define model paths
+                val modelAssetPath = "models/vosk-model" // Path in assets
+                val modelDestDir = File(filesDir, "vosk-model") // Destination in internal storage
+
+                // 3. Verify model exists in assets
+                val hasModel = assetManager.list(modelAssetPath)?.isNotEmpty() == true
+                if (!hasModel) {
+                    throw Exception("Model not found in assets at path: $modelAssetPath")
+                }
+
+                // 4. Copy model from assets to internal storage if needed
+                if (!modelDestDir.exists()) {
+                    Log.d("ModelCopy", "Copying model from assets to $modelDestDir")
+                    copyAssetsToDirectory(assetManager, modelAssetPath, modelDestDir)
+                }
+
+                // 5. Initialize Vosk model with the copied path
+                model = Model(modelDestDir.absolutePath)
+                Log.d("ModelInit", "Successfully loaded model from ${modelDestDir.absolutePath}")
+
+            } catch (e: Exception) {
+                Log.e("ModelLoading", "Failed to load model", e)
+                // Handle error appropriately
+            }
+            val recognizer = Recognizer(model, 16000.0f)
+            speechService = SpeechService(recognizer, 16000.0f)
+            speechService?.startListening(this)
+        }.start()
+    }
+
+    override fun onResult(hypothesis: String?) {
+        Log.d("VoskResult", hypothesis ?: "null")
+    }
+
+    override fun onFinalResult(hypothesis: String?) {
+        Log.d("VoskFinal", hypothesis ?: "null")
+    }
+
+    override fun onPartialResult(hypothesis: String?) {}
+    override fun onError(e: java.lang.Exception?) {
+        Log.e("VoskError", e?.message ?: "error")
+    }
+
+    override fun onTimeout() {}
 }
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -200,6 +288,27 @@ fun ChatItemBox(
             Text(text = " $input", color = Color.Black, style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(4.dp))
             Text(text = timeStamp, color = Color.Gray, style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+// Helper function to copy assets
+private fun copyAssetsToDirectory(assetManager: AssetManager, assetPath: String, targetDir: File) {
+    targetDir.mkdirs()
+    assetManager.list(assetPath)?.forEach { asset ->
+        val srcPath = "$assetPath/$asset"
+        val destFile = File(targetDir, asset)
+
+        if (assetManager.list(srcPath)?.isNotEmpty() == true) {
+            // It's a subdirectory - recurse
+            copyAssetsToDirectory(assetManager, srcPath, destFile)
+        } else {
+            // It's a file - copy it
+            assetManager.open(srcPath).use { inputStream ->
+                FileOutputStream(destFile).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
         }
     }
 }
