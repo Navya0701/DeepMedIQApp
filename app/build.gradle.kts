@@ -16,11 +16,11 @@ if (localPropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.example.medcopilot"
+    namespace = "com.example.deepmediq"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.medcopilot"
+        applicationId = "com.example.deepmediq"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -55,6 +55,18 @@ android {
 }
 
 dependencies {
+
+
+
+    //material
+    implementation ("androidx.compose.material3:material3:1.2.1") // or latest version
+    // OR if you want both Material 2 and 3:
+    implementation ("androidx.compose.material:material:1.6.4")
+    implementation ("androidx.compose.material3:material3:1.2.1")
+
+    //coil
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
     implementation("androidx.appcompat:appcompat:1.3.1")
     implementation("net.java.dev.jna:jna:5.13.0@aar")
     implementation("com.alphacephei:vosk-android:0.3.47@aar")

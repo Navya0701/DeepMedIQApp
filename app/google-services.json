@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "85234600859",
-    "project_id": "medcopilot9",
-    "storage_bucket": "medcopilot9.firebasestorage.app"
+    "project_number": "75026869617",
+    "project_id": "deepmediq-29af7",
+    "storage_bucket": "deepmediq-29af7.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:85234600859:android:cecb564c85c100935eef3e",
+        "mobilesdk_app_id": "1:75026869617:android:b570ec74e405d1aa09dad0",
         "android_client_info": {
-          "package_name": "com.example.medcopilot"
+          "package_name": "com.example.deepmediq"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBW_puyE5jq8CsjUo82nJFpTuy0-AIA7k0"
+          "current_key": "AIzaSyB7wrnamfK9n9ei1442hBt08E_mpqrCbLA"
         }
       ],
       "services": {
