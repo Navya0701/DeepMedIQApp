@@ -2,9 +2,9 @@ package com.example.deepmediq.di
 
 import android.app.Application
 import androidx.room.Room
-import com.example.deepmediq.data.ChatDatabase
-import com.example.deepmediq.data.ChatRepository
-import com.example.deepmediq.data.ChatRepositoryImplementation
+import com.example.deepmediq.roomDatabase.ChatDatabase
+import com.example.deepmediq.roomDatabase.ChatRepository
+import com.example.deepmediq.roomDatabase.ChatRepositoryImplementation
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

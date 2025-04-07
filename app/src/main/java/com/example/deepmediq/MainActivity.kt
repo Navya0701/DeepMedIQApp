@@ -130,11 +130,8 @@ class MainActivity : ComponentActivity() {
                 }
 
             }
-        }
-
+        } // navigation
     }
-
-
 }
 
 
@@ -145,8 +142,10 @@ fun DeepMedIQApp(
     onNavigate: (UiEvent.Navigate) -> Unit = {},
 ) {
 
+    // env variables
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
     // user details
     val prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
     val name = prefs.getString("name", "")
@@ -161,10 +160,9 @@ fun DeepMedIQApp(
             Log.d("DrawerState", "Drawer is open: $isOpen")
         }
     }
-    var selectedScreen by remember { mutableStateOf("Chat") }
 
     val entryScreenViewModel: EntryScreenViewModel = hiltViewModel()
-    val dbChats = entryScreenViewModel.chats.collectAsState( emptyList())
+    val dbChats = entryScreenViewModel.databaseChats.collectAsState( emptyList())
 
 
     ModalNavigationDrawer(
@@ -228,7 +226,6 @@ fun DeepMedIQApp(
                         }
                     }
                 }
-
             }
         }
     ) {
@@ -291,10 +288,7 @@ fun DeepMedIQApp(
                     }
                 )
             }
-
-
         ) { innerPadding ->
-            // Main content area
             Column(modifier = Modifier.padding(innerPadding)) {
                ChatScreen()
             }

@@ -1,4 +1,4 @@
-import com.example.deepmediq.models.Context
+import com.example.deepmediq.dataModels.Context
 
 data class ChatListItem(
     val answer: String,

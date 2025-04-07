@@ -1,4 +1,4 @@
-package com.example.deepmediq.data
+package com.example.deepmediq.roomDatabase
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

@@ -11,7 +11,7 @@ import retrofit2.http.Query
 interface ChatAPI {
 
     @POST("chat")
-    suspend fun getChatMessages(
+    suspend fun getBackendResponse(
         @Query("message") message: String,
         @Body requestBody: RequestBody,  // For JSON body
         @Header("Content-Type") contentType: String = "application/json",

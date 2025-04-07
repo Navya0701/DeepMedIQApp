@@ -9,14 +9,11 @@ import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.filled.ThumbDown
-import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -44,11 +41,9 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.ui.input.pointer.pointerInput
 import java.util.Locale
 import android.Manifest
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.ui.graphics.Brush
@@ -57,47 +52,54 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.PermissionStatus
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Mic
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalConfiguration
-import com.example.deepmediq.MainActivity
 import com.example.deepmediq.R
-import com.example.deepmediq.data.Chat
-import kotlinx.coroutines.CoroutineScope
+import com.example.deepmediq.roomDatabase.Chat
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.math.abs
 
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ChatScreen() {
 
-
-
-    var chatItems = remember {
-        mutableStateListOf<ChatListItem>(
-
-        )
-    }
-
-    val configuration = LocalConfiguration.current
-    val entryScreenViewModel: EntryScreenViewModel = hiltViewModel()
-    //val responses = entryScreenViewModel.chats.collectAsState(emptyList())  // Corrected variable // collected from the database
-    var message by remember { mutableStateOf("") }
-    val response = entryScreenViewModel.chatMessages.collectAsState()
-    var messages by remember { mutableStateOf(emptyList<Pair<String, Boolean>>()) } // Boolean to track user/AI messages
-    var responseReceived by remember { mutableStateOf(false) } // Hide predefined questions after first response
-    val listState = rememberLazyListState()
+    // env variables
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val configuration = LocalConfiguration.current
 
+    // view model
+    val entryScreenViewModel: EntryScreenViewModel = hiltViewModel()
+
+
+
+    // stores the chat items in the lazy column
+    val databaseChats by entryScreenViewModel.databaseChats.collectAsState(initial = emptyList())    // stores the message in the input field
+    var message by remember { mutableStateOf("") }
+    var displayQuestion by remember {mutableStateOf("")}
+    // watches the response from the backend
+    val backendResponse = entryScreenViewModel.backendResponse.collectAsState()
+    // used to store the state of the lazy column
+    val listState = rememberLazyListState()
+    // used to scroll to the selected item in the drawer
     var selectedItemIndex = entryScreenViewModel.selectedItem.collectAsState(0)
-    val isLoading =
-        entryScreenViewModel.isLoading.collectAsState(initial = false) // Track loading state
-    // Permission handling
-
+    // used to show the spinner
+    val isLoading = entryScreenViewModel.isLoading.collectAsState(initial = false)
+    // used to switch bw the chat screen and the initial screen
     val firstLoad = entryScreenViewModel.firstLoad.collectAsState()
+    // used to show the slow load fade in transition during output display
+    var slowLoad = remember { mutableStateOf(false) }
+    // autoscroll feature
+    var shouldAutoScroll by remember { mutableStateOf(true) }
 
+
+
+    // Speech Section....
+
+
+    // permission state
     val permissionState = rememberPermissionState(permission = Manifest.permission.RECORD_AUDIO)
 
     // Speech recognition states
@@ -109,11 +111,6 @@ fun ChatScreen() {
     val isSpeechRecognitionAvailable = remember {
         SpeechRecognizer.isRecognitionAvailable(context)
     }
-
-    var lastAnimatedIndex by remember { mutableStateOf(-1) }
-
-
-
 
     // Initialize Speech Recognizer
     DisposableEffect(Unit) {
@@ -265,58 +262,43 @@ fun ChatScreen() {
         }
     }
 
+
+
+
+
+
     // Feedback dialog state
     var showFeedbackDialog by remember { mutableStateOf(false) }
     var selectedFeedbackOption by remember { mutableStateOf<String?>(null) }
     var feedbackText by remember { mutableStateOf("") }
-    val scope = rememberCoroutineScope()
-    var slowLoad = remember { mutableStateOf(false) }
 
-    LaunchedEffect(response.value) {  // Fix: React to response updates
-        if (!response.value.answer.equals("") && !response.value.input.equals("Initial input")) {
-            entryScreenViewModel.onEvent(ChatGenEvent.OnAddChatGenClick(response.value)) // this line inserts it intot the database
-            val index = chatItems.indexOfLast { it.answer == "" }
-            if (index != -1) {
-                slowLoad.value  = true
-                chatItems[index] = chatItems[index].copy(answer = response.value.answer)
 
-//                listState.animateScrollToItem(index)
-            }
-            Log.d("slowLoadValue",slowLoad.value.toString())
 
+    LaunchedEffect(databaseChats.lastOrNull()?.id) {
+        if (shouldAutoScroll && databaseChats.isNotEmpty()) {
+            listState.scrollToItem(databaseChats.lastIndex)
         }
     }
 
+    // this runs every time we get a response from the backend
+    LaunchedEffect(backendResponse.value) {  // Fix: React to response updates
+        if (!backendResponse.value.answer.equals("") && !backendResponse.value.input.equals("Initial input")) {
 
+            // inserts into the database
+            entryScreenViewModel.onEvent(ChatGenEvent.OnAddChatGenClick(backendResponse.value))
+            slowLoad.value = true
+        }
+    }
+
+    // this run every time the user clicks on the history items
     LaunchedEffect(selectedItemIndex.value) {
         val index = selectedItemIndex.value
         if (index != -1) if (index != null) {
-            listState.animateScrollToItem(index-1)
+            listState.animateScrollToItem(if(index-1>0)index-1 else 0)
         }
     }
-//
-//    LaunchedEffect(responses.value) {
-//        chatItems.clear()
-//        chatItems.addAll(responses.value.map { response ->
-//            ChatListItem(
-//                input = response.input ?: "",
-//                answer = response.output ?: "",
-//            )
-//        })
-//    }
-//
 
-    LaunchedEffect(Unit) {
-        entryScreenViewModel.chats.collect { newList: List<Chat> ->
-            chatItems.clear()
-            chatItems.addAll(newList.map{ response ->
-                ChatListItem(
-                    input = response.input ?: "",
-                    answer = response.output ?: "",
-                )
-            }) // newList is a List, which is a Collection
-        }
-    }
+
 
 
 
@@ -424,7 +406,6 @@ fun ChatScreen() {
                 "What is the treatment for high grade dysplasia?",
                 "Which endoscopic procedures are high-risk?"
             )
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -441,18 +422,14 @@ fun ChatScreen() {
                             .background(Color.White)
                             .padding(16.dp) // inner padding
                             .clickable {
-                                messages = messages + (question to true)
-                                chatItems += ChatListItem(
-                                    input = question,
-                                    answer = "",
-                                )
-                                val index = chatItems.indexOfLast { it.answer == "" }
-                                scope.launch {
-                                    if (index != -1) listState.scrollToItem(index)
-                                }
-                                entryScreenViewModel.getChatMessages(question)
-                                responseReceived = true
+
+                                displayQuestion = question
                                 entryScreenViewModel.setFirstLoadTrue()
+                                shouldAutoScroll = true // Reset scroll behavior
+                                scope.launch {
+                                    entryScreenViewModel.getBackendResponse(question)
+                                }
+
                             }
                     ) {
                         Text(
@@ -468,54 +445,59 @@ fun ChatScreen() {
                 }
             }
 
-        } else {
+        }// Replace your isLoading handling with:
+        else if (isLoading.value) {
+
+                Column {
+                    if (databaseChats.isNotEmpty()) {
+                        ChatItemBox(
+                            input = displayQuestion,
+                            output = "Thinking...",
+                            isSlow = false
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(48.dp),
+                            color = Color(0xFF87CEEB)
+                        )
+                    }
+                }
+
+        }
+        else {
             // Chat messages list
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(bottom = 72.dp), // Ensure space for the input box
+                    .padding(bottom = 72.dp)// Ensure space for the input box
+                    .pointerInput(Unit) {
+                        detectVerticalDragGestures { _, dragAmount ->
+                            if (abs(dragAmount) > 0f) {
+                                shouldAutoScroll = false
+                            }
+                        }
+                    },
                 state = listState
             ) {
 
-                itemsIndexed(chatItems) { index,item ->
-                    if (item.answer == "") {
-                        val screenHeight = LocalConfiguration.current.screenHeightDp.dp
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(screenHeight * 0.80f)
-                                .padding(16.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize(),
-                                verticalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                ChatItemBox(input = item.input, output = "Thinking...", false)
-                                if (isLoading.value) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(top = 16.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        CircularProgressIndicator(
-                                            modifier = Modifier.size(48.dp),
-                                            color = Color(0xFF87CEEB)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
+                itemsIndexed(databaseChats) { index,item ->
 
-                    else if (slowLoad.value && index == chatItems.lastIndex) {
+                     if (slowLoad.value && index == databaseChats.lastIndex) {
                         var visible by remember { mutableStateOf(false) }
+                         var animationComplete by remember { mutableStateOf(false) }
 
                         LaunchedEffect(Unit) {
+
+
                             delay(300) // small delay before starting animation
                             visible = true
-                            listState.animateScrollToItem(index)
+                            animationComplete = true
                         }
 
                         val alpha by animateFloatAsState(
@@ -524,16 +506,17 @@ fun ChatScreen() {
                         )
 
                         // Reset slowLoad after animation completes
-                        LaunchedEffect(alpha) {
-                            if (alpha == 1f) {
-                                slowLoad.value = false
-                            }
-                        }
+//                         LaunchedEffect(animationComplete) {
+//                             if (animationComplete && shouldAutoScroll) {
+//                                 listState.animateScrollToItem(index)
+//                                 slowLoad.value = false
+//                             }
+//                         }
 
                         Box(modifier = Modifier.alpha(alpha)) {
                             ChatItemBox(
                                 input = item.input ?: "",
-                                output = item.answer ?: "",
+                                output = item.output ?: "",
                                 isSlow = false,
                                 alpha = alpha
                             )
@@ -542,7 +525,7 @@ fun ChatScreen() {
                     else {
                         ChatItemBox(
                             input = item.input ?: "",
-                            output = item.answer ?: "",
+                            output = item.output ?: "",
                             false
                         )
                         Row(
@@ -576,7 +559,7 @@ fun ChatScreen() {
                                 onClick = {
                                     val clipboard =
                                         context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                    val clip = ClipData.newPlainText("Response", item.answer)
+                                    val clip = ClipData.newPlainText("Response", item.output)
                                     clipboard.setPrimaryClip(clip)
                                     Toast.makeText(
                                         context,
@@ -617,8 +600,7 @@ fun ChatScreen() {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .imePadding() // Adjust for keyboard
-                ,
+                .imePadding(), // Adjust for keyboard,
             verticalArrangement = Arrangement.Bottom
         ) {
             Box(
@@ -651,10 +633,10 @@ fun ChatScreen() {
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
                         keyboardActions = KeyboardActions(onSend = {
                             if (message.isNotBlank()) {
-                                messages = messages + (message to true)
-                                entryScreenViewModel.getChatMessages(message)
+                                displayQuestion = message
+                                shouldAutoScroll = true
+                                entryScreenViewModel.getBackendResponse(message)
                                 message = ""
-                                responseReceived = true
                                 entryScreenViewModel.setFirstLoadTrue()
                             }
                         }),
@@ -705,19 +687,10 @@ fun ChatScreen() {
                             .size(28.dp)
                             .clickable {
                                 if (message.isNotBlank()) {
-                                    messages = messages + (message to true)
-                                    chatItems += ChatListItem(
-                                        input = message,
-                                        answer = "",
-                                    )
-                                    val index = chatItems.indexOfLast { it.answer == "" }
-                                    scope.launch {
-                                        if (index != -1) listState.scrollToItem(index)
-                                    }
-
-                                    entryScreenViewModel.getChatMessages(message)
+                                    displayQuestion = message
+                                    shouldAutoScroll = true
+                                    entryScreenViewModel.getBackendResponse(message)
                                     message = ""
-                                    responseReceived = true
                                     entryScreenViewModel.setFirstLoadTrue()
                                 }
                             }

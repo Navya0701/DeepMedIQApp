@@ -1,4 +1,4 @@
-package com.example.deepmediq.models
+package com.example.deepmediq.dataModels
 
 data class MedicalQAResponse(
     val input: String,

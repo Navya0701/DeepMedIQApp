@@ -1,4 +1,4 @@
-package com.example.deepmediq.data
+package com.example.deepmediq.roomDatabase
 
 import kotlinx.coroutines.flow.Flow
 

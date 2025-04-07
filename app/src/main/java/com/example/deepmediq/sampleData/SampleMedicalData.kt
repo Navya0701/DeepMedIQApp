@@ -1,11 +1,11 @@
 package com.example.deepmediq.sampleData
 
-import com.example.deepmediq.models.Answer
-import com.example.deepmediq.models.Context
-import com.example.deepmediq.models.FollowupQuestion
-import com.example.deepmediq.models.MedicalQAResponse
-import com.example.deepmediq.models.Metadata
-import com.example.deepmediq.models.RelatedQuestion
+import com.example.deepmediq.dataModels.Answer
+import com.example.deepmediq.dataModels.Context
+import com.example.deepmediq.dataModels.FollowupQuestion
+import com.example.deepmediq.dataModels.MedicalQAResponse
+import com.example.deepmediq.dataModels.Metadata
+import com.example.deepmediq.dataModels.RelatedQuestion
 
 object SampleMedicalData {
     val dataset = listOf(
@@ -16,7 +16,7 @@ object SampleMedicalData {
                     answer = "Based on the 2023 guidelines, you may consider atrial fibrillation ablation for your patient...",
                     context = listOf(
                         Context(
-                            metadata = com.example.deepmediq.models.Metadata(
+                            metadata = com.example.deepmediq.dataModels.Metadata(
                                 year = 2023,
                                 region = "United States",
                                 title = "2023 Guideline for the Diagnosis and Management of Atrial Fibrillation",
@@ -31,7 +31,7 @@ object SampleMedicalData {
                             answer = "The risks associated with atrial fibrillation ablation include bleeding, infection, stroke...",
                             context = listOf(
                                 Context(
-                                    metadata = com.example.deepmediq.models.Metadata(
+                                    metadata = com.example.deepmediq.dataModels.Metadata(
                                         year = 2023,
                                         region = "United States",
                                         title = "2023 Guideline for the Diagnosis and Management of Atrial Fibrillation",
@@ -53,7 +53,7 @@ object SampleMedicalData {
                             answer = "Common symptoms include palpitations, fatigue, shortness of breath...",
                             context = listOf(
                                 Context(
-                                    metadata = com.example.deepmediq.models.Metadata(
+                                    metadata = com.example.deepmediq.dataModels.Metadata(
                                         year = 2023,
                                         title = "Atrial Fibrillation Symptoms Guide"
                                     ),

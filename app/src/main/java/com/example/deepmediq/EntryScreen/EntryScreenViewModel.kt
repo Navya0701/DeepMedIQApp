@@ -8,7 +8,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.example.deepmediq.data.Chat
+import com.example.deepmediq.roomDatabase.Chat
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.text.SimpleDateFormat
@@ -16,15 +17,16 @@ import java.util.Date
 import java.util.Locale
 
 @HiltViewModel
-class EntryScreenViewModel @Inject constructor(private val repository: com.example.deepmediq.backendRepository.ChatRepository, private val chatRepository: com.example.deepmediq.data.ChatRepository) : ViewModel(){
+class EntryScreenViewModel @Inject constructor(private val backendRepository: com.example.deepmediq.backendRepository.ChatRepository, private val databaseRepository: com.example.deepmediq.roomDatabase.ChatRepository) : ViewModel(){
 
-    val chats = chatRepository.getChats() // this is a flow
+    val databaseChats: Flow<List<Chat>>
+        get() = databaseRepository.getChats() // this is a flow
 
 //    private val _uiEvent = Channel<UiEvent>()
 //    val uiEvent = _uiEvent.receiveAsFlow()
 
-    val chatMessages: StateFlow<ChatListItem>
-        get() = repository.chatMessages
+    val backendResponse: StateFlow<ChatListItem>
+        get() = backendRepository.backendResponse
 
     private val _selectedItem = MutableStateFlow<Int?>(0)
     val selectedItem: StateFlow<Int?> = _selectedItem.asStateFlow()
@@ -45,15 +47,14 @@ class EntryScreenViewModel @Inject constructor(private val repository: com.examp
     fun onItemClick(id: Int) {
         setFirstLoadTrue()
         _selectedItem.value = id
-        Log.d("onItemClick","yes clicked $id")
     }
 
-
+    // inserts the response into db
     fun onEvent(event: ChatGenEvent){
         when(event){
             is ChatGenEvent.OnAddChatGenClick ->{
                 viewModelScope.launch{
-                    chatRepository.insertChat(
+                    databaseRepository.insertChat(
                         Chat(
                             input = event.chatListItem.input,
                             output = event.chatListItem.answer,
@@ -65,10 +66,10 @@ class EntryScreenViewModel @Inject constructor(private val repository: com.examp
         }
     }
 
-    fun getChatMessages(inputString: String){
+    fun getBackendResponse(inputString: String){
         viewModelScope.launch {
             _isLoading.value = true
-            repository.getChatMessages(inputString)
+            backendRepository.getBackendResponse(inputString)
             _isLoading.value = false
 
         }
