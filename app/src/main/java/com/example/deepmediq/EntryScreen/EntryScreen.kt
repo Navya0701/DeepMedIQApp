@@ -62,6 +62,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalConfiguration
 import com.example.deepmediq.MainActivity
 import com.example.deepmediq.R
+import com.example.deepmediq.data.Chat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -72,18 +73,17 @@ import kotlin.coroutines.EmptyCoroutineContext
 @Composable
 fun ChatScreen() {
 
+
+
     var chatItems = remember {
         mutableStateListOf<ChatListItem>(
 
         )
     }
 
-
-
-
     val configuration = LocalConfiguration.current
     val entryScreenViewModel: EntryScreenViewModel = hiltViewModel()
-    val responses = entryScreenViewModel.chats.collectAsState(emptyList())  // Corrected variable // collected from the database
+    //val responses = entryScreenViewModel.chats.collectAsState(emptyList())  // Corrected variable // collected from the database
     var message by remember { mutableStateOf("") }
     val response = entryScreenViewModel.chatMessages.collectAsState()
     var messages by remember { mutableStateOf(emptyList<Pair<String, Boolean>>()) } // Boolean to track user/AI messages
@@ -110,7 +110,7 @@ fun ChatScreen() {
         SpeechRecognizer.isRecognitionAvailable(context)
     }
 
-
+    var lastAnimatedIndex by remember { mutableStateOf(-1) }
 
 
 
@@ -270,34 +270,55 @@ fun ChatScreen() {
     var selectedFeedbackOption by remember { mutableStateOf<String?>(null) }
     var feedbackText by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
-
+    var slowLoad = remember { mutableStateOf(false) }
 
     LaunchedEffect(response.value) {  // Fix: React to response updates
         if (!response.value.answer.equals("") && !response.value.input.equals("Initial input")) {
             entryScreenViewModel.onEvent(ChatGenEvent.OnAddChatGenClick(response.value)) // this line inserts it intot the database
             val index = chatItems.indexOfLast { it.answer == "" }
             if (index != -1) {
+                slowLoad.value  = true
                 chatItems[index] = chatItems[index].copy(answer = response.value.answer)
-                listState.animateScrollToItem(index)
+
+//                listState.animateScrollToItem(index)
             }
+            Log.d("slowLoadValue",slowLoad.value.toString())
+
         }
     }
 
 
     LaunchedEffect(selectedItemIndex.value) {
-        val index = responses.value.indexOfFirst { it.id == selectedItemIndex.value }
-        if (index != -1) listState.animateScrollToItem(index)
+        val index = selectedItemIndex.value
+        if (index != -1) if (index != null) {
+            listState.animateScrollToItem(index-1)
+        }
+    }
+//
+//    LaunchedEffect(responses.value) {
+//        chatItems.clear()
+//        chatItems.addAll(responses.value.map { response ->
+//            ChatListItem(
+//                input = response.input ?: "",
+//                answer = response.output ?: "",
+//            )
+//        })
+//    }
+//
+
+    LaunchedEffect(Unit) {
+        entryScreenViewModel.chats.collect { newList: List<Chat> ->
+            chatItems.clear()
+            chatItems.addAll(newList.map{ response ->
+                ChatListItem(
+                    input = response.input ?: "",
+                    answer = response.output ?: "",
+                )
+            }) // newList is a List, which is a Collection
+        }
     }
 
-    LaunchedEffect(responses.value) {
-        chatItems.clear()
-        chatItems.addAll(responses.value.map { response ->
-            ChatListItem(
-                input = response.input ?: "",
-                answer = response.output ?: "",
-            )
-        })
-    }
+
 
     // Feedback Dialog
     if (showFeedbackDialog) {
@@ -488,19 +509,26 @@ fun ChatScreen() {
                         }
                     }
 
-                    else if (!isLoading.value && index == chatItems.lastIndex) {
+                    else if (slowLoad.value && index == chatItems.lastIndex) {
                         var visible by remember { mutableStateOf(false) }
 
                         LaunchedEffect(Unit) {
-                            delay(300) // small delay before reveal
-                            listState.animateScrollToItem(index)
+                            delay(300) // small delay before starting animation
                             visible = true
+                            listState.animateScrollToItem(index)
                         }
 
                         val alpha by animateFloatAsState(
                             targetValue = if (visible) 1f else 0f,
-                            animationSpec = tween(durationMillis = 3000) // 1 second fade
+                            animationSpec = tween(durationMillis = 1000) // Reduced duration
                         )
+
+                        // Reset slowLoad after animation completes
+                        LaunchedEffect(alpha) {
+                            if (alpha == 1f) {
+                                slowLoad.value = false
+                            }
+                        }
 
                         Box(modifier = Modifier.alpha(alpha)) {
                             ChatItemBox(
@@ -511,7 +539,6 @@ fun ChatScreen() {
                             )
                         }
                     }
-
                     else {
                         ChatItemBox(
                             input = item.input ?: "",
@@ -570,6 +597,7 @@ fun ChatScreen() {
                         }
                     }
                     Spacer(modifier = Modifier.padding(3.dp))
+                    Log.d("last","entered")
                 }
                 // Show loading indicator if waiting for a response
 
