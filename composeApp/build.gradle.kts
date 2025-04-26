@@ -38,7 +38,27 @@ kotlin {
     jvm("desktop")
     
     sourceSets {
+        val commonMain by getting
+
+        val androidMain by getting
+
         val desktopMain by getting
+
+        val nativeMain by creating {
+            dependsOn(commonMain)
+        }
+
+        val iosX64Main by getting {
+            dependsOn(nativeMain)
+        }
+        val iosArm64Main by getting {
+            dependsOn(nativeMain)
+        }
+        val iosSimulatorArm64Main by getting {
+            dependsOn(nativeMain)
+        }
+
+
         
         androidMain.dependencies {
             implementation(compose.preview)
