@@ -1,9 +1,5 @@
 package org.deepmediq.chat.presentation.chat_screen.components
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,7 +8,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
@@ -36,24 +31,13 @@ fun ChatList(
     modifier: Modifier = Modifier,
     scrollState: LazyListState = rememberLazyListState()
 ) {
-    // State to control last item animation
-    var animateLastItem by remember { mutableStateOf(false) }
-
-    // LaunchedEffect to handle scrolling and animation
-    LaunchedEffect(chats.size) {
+    // Automatically scroll to the last item when chats are updated
+    LaunchedEffect(chats) {
         if (chats.isNotEmpty()) {
-            // Scroll to the last item
-            scrollState.animateScrollToItem(chats.lastIndex, scrollOffset = 0)
-            // Wait for scroll to complete
-            while (scrollState.isScrollInProgress) {
-                delay(50L)
-            }
-            // Trigger animation after scroll
-            animateLastItem = true
+            scrollState.animateScrollToItem(chats.lastIndex)
         }
     }
 
-    // Handle loading state
     if (state.isLoading) {
         ChatListItem(
             chat = Chat("0", state.searchQuery, "Thinking...", ""),
@@ -68,7 +52,7 @@ fun ChatList(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Render all items except the last one
-            items(chats.dropLast(1), key = { chat -> chat.id }) { chat ->
+            items(chats, key = { chat -> chat.id }) { chat ->
                 ChatListItem(
                     chat = chat,
                     modifier = Modifier
@@ -77,25 +61,6 @@ fun ChatList(
                         .padding(horizontal = 16.dp),
                     onClick = { onBookClick(chat) }
                 )
-            }
-
-            // Render the last item with animation
-            if (chats.isNotEmpty()) {
-                item {
-                    AnimatedVisibility(
-                        visible = animateLastItem,
-                        enter = slideInVertically(animationSpec = tween(2000)) + fadeIn(animationSpec = tween(2000))
-                    ) {
-                        ChatListItem(
-                            chat = chats.last(),
-                            modifier = Modifier
-                                .widthIn(max = 700.dp)
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            onClick = { onBookClick(chats.last()) }
-                        )
-                    }
-                }
             }
         }
     }

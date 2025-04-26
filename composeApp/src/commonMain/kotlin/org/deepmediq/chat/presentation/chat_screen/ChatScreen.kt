@@ -1,19 +1,16 @@
 package org.deepmediq.chat.presentation.chat_screen
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -25,26 +22,32 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
 import org.deepmediq.chat.domain.Chat
 import org.deepmediq.chat.presentation.chat_screen.components.ChatList
 import org.deepmediq.chat.presentation.chat_screen.components.ChatSearchBar
-import org.deepmediq.core.presentation.DarkBlue
-import org.deepmediq.core.presentation.DesertWhite
-
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ChatScreenRoot(
+    modifier: Modifier = Modifier,
     viewModel: ChatScreenViewModel = koinViewModel(),
     onBookClick: (Chat) -> Unit = {}
 ) {
@@ -56,7 +59,6 @@ fun ChatScreenRoot(
             isLoading = true
         )
     )
-
 
     ChatScreen(
         state = state,
@@ -72,23 +74,38 @@ fun ChatScreen(
     onAction: (ChatScreenAction) -> Unit,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
-
-    val pagerState = rememberPagerState { 2 }
-    val searchResultsListState = rememberLazyListState()
-    val favoriteBooksListState = rememberLazyListState()
-
-//    LaunchedEffect(state.searchResults) {
-//        searchResultsListState.animateScrollToItem(0)
-//    }
-
+    val scrollState = rememberLazyListState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(DarkBlue)
-            .statusBarsPadding(),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(Color.White)
+            .statusBarsPadding()
     ) {
+        // ChatList with weight to take available space
+        Surface(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            color = Color.White,
+            shape = RoundedCornerShape(
+                topStart = 32.dp,
+                topEnd = 32.dp
+            )
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                ChatList(
+                    chats = state.searchResults,
+                    state = state,
+                    onBookClick = {},
+                    scrollState = scrollState
+                )
+            }
+        }
+
+        // ChatSearchBar at the bottom with imePadding
         ChatSearchBar(
             searchQuery = state.searchQuery,
             onSearchQueryChange = {
@@ -101,29 +118,10 @@ fun ChatScreen(
                 keyboardController?.hide()
             },
             modifier = Modifier
-                .widthIn(max = 400.dp)
                 .fillMaxWidth()
+                .imePadding() // Adjust for keyboard
                 .padding(16.dp)
+                .widthIn(min = 200.dp, max = 600.dp)
         )
-        Surface(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            color = DesertWhite,
-            shape = RoundedCornerShape(
-                topStart = 32.dp,
-                topEnd = 32.dp
-            )
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                ChatList(
-                    state.searchResults,
-                    state,
-                    {}
-                )
-            }
-        }
     }
 }
