@@ -34,7 +34,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.deepmediq.chat.domain.Chat
 import org.deepmediq.chat.presentation.chat_screen.components.ChatList
 import org.deepmediq.chat.presentation.chat_screen.components.ChatSearchBar
@@ -51,14 +54,17 @@ fun ChatScreenRoot(
     viewModel: ChatScreenViewModel = koinViewModel(),
     onBookClick: (Chat) -> Unit = {}
 ) {
+
     val state by viewModel.state.collectAsStateWithLifecycle(
         initialValue = ChatScreenState(
             searchQuery = "Hi how may i help you",
             searchResults = emptyList(),
             favouriteChats = emptyList(),
-            isLoading = true
+            isLoading = true,
         )
     )
+
+
 
 
     ChatScreen(
@@ -78,6 +84,16 @@ fun ChatScreen(
 
     val scrollState = rememberLazyListState()
 
+    // In your ChatScreen.kt Composable
+    LaunchedEffect(state.searchResults, state.isInitialLoad) {
+        if (state.isInitialLoad && state.searchResults.isNotEmpty()) {
+            launch { // Use the scope from LaunchedEffect
+                scrollState.animateScrollToItem(state.searchResults.lastIndex)
+            }
+            // No need to set isInitialLoad = false here anymore; ViewModel handles it.
+        }
+    }
+
 
     Column(
         modifier = Modifier
@@ -86,22 +102,7 @@ fun ChatScreen(
             .statusBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        ChatSearchBar(
-            searchQuery = state.searchQuery,
-            onSearchQueryChange = {
-                onAction(ChatScreenAction.OnSearchQueryChange(it))
-            },
-            onSendClick = {
-                onAction(ChatScreenAction.OnSendClick(it))
-            },
-            onImeSearch = {
-                keyboardController?.hide()
-            },
-            modifier = Modifier
-                .widthIn(max = 400.dp)
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
+
         Surface(
             modifier = Modifier
                 .weight(1f)
@@ -123,5 +124,21 @@ fun ChatScreen(
                 )
             }
         }
+        ChatSearchBar(
+            searchQuery = state.searchQuery,
+            onSearchQueryChange = {
+                onAction(ChatScreenAction.OnSearchQueryChange(it))
+            },
+            onSendClick = {
+                onAction(ChatScreenAction.OnSendClick(it))
+            },
+            onImeSearch = {
+                keyboardController?.hide()
+            },
+            modifier = Modifier
+                .widthIn(max = 400.dp)
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
     }
 }

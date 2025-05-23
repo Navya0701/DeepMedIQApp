@@ -40,6 +40,8 @@ import deepmediq.composeapp.generated.resources.Res
 import deepmediq.composeapp.generated.resources.close_hint
 import deepmediq.composeapp.generated.resources.ic_send
 import deepmediq.composeapp.generated.resources.search_hint
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import org.deepmediq.chat.data.sampleData.SampleMedicalData
 import org.deepmediq.chat.presentation.chat_screen.ChatScreenAction
 import org.jetbrains.compose.resources.painterResource

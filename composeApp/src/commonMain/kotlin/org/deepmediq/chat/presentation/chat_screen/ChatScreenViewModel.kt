@@ -35,6 +35,14 @@ class ChatScreenViewModel(
                     currentState.copy(searchResults = result, isLoading = false)
                 }
             }
+            _state.update { currentState ->
+                currentState.copy(searchResults=currentState.searchResults+cachedChats)
+            }
+            delay(500)
+
+            _state.update { currentState ->
+                currentState.copy(searchResults=currentState.searchResults-cachedChats)
+            }
         }
     }
 

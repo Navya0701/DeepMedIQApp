@@ -69,25 +69,6 @@ fun ChatList(
                     onClick = { onBookClick(chat) }
                 )
             }
-
-            // Render the last item with animation
-//            if (chats.isNotEmpty()) {
-//                item {
-//                    AnimatedVisibility(
-//                        visible = animateLastItem,
-//                        enter = slideInVertically(animationSpec = tween(2000)) + fadeIn(animationSpec = tween(2000))
-//                    ) {
-//                        ChatListItem(
-//                            chat = chats.last(),
-//                            modifier = Modifier
-//                                .widthIn(max = 700.dp)
-//                                .fillMaxWidth()
-//                                .padding(horizontal = 16.dp),
-//                            onClick = { onBookClick(chats.last()) }
-//                        )
-//                    }
-//                }
-//            }
         }
     }
 }

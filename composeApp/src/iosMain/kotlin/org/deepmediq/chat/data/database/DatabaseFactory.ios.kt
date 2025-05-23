@@ -2,6 +2,10 @@ package org.deepmediq.chat.data.database
 
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSFileManager
+import platform.Foundation.NSUserDomainMask
+
 
 actual class DatabaseFactory {
     actual fun create(): RoomDatabase.Builder<ChatDatabase> {

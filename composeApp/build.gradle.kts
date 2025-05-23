@@ -70,11 +70,13 @@ kotlin {
 
             implementation(libs.bundles.ktor)
             implementation(libs.bundles.coil)
+            implementation("io.ktor:ktor-client-websockets:2.3.12")
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
             implementation(libs.ktor.client.okhttp)
+
         }
         nativeMain.dependencies {
             implementation(libs.ktor.client.darwin)
