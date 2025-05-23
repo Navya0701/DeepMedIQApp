@@ -38,8 +38,10 @@ import kotlinx.coroutines.delay
 import org.deepmediq.chat.domain.Chat
 import org.deepmediq.chat.presentation.chat_screen.components.ChatList
 import org.deepmediq.chat.presentation.chat_screen.components.ChatSearchBar
-import org.deepmediq.core.presentation.DarkBlue
+
 import org.deepmediq.core.presentation.DesertWhite
+import org.deepmediq.core.presentation.DarkBlue
+
 
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
