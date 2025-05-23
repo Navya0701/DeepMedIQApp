@@ -7,4 +7,5 @@ data class ChatScreenState(
     var searchResults: List<Chat> = emptyList(),
     var favouriteChats: List<Chat> = emptyList(),
     var isLoading: Boolean = false,
+    var goLast: Boolean = true
 )

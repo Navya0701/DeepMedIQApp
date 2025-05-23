@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
 import org.deepmediq.chat.domain.Chat
 import org.deepmediq.chat.presentation.chat_screen.components.ChatList
 import org.deepmediq.chat.presentation.chat_screen.components.ChatSearchBar
@@ -73,13 +74,7 @@ fun ChatScreen(
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    val pagerState = rememberPagerState { 2 }
-    val searchResultsListState = rememberLazyListState()
-    val favoriteBooksListState = rememberLazyListState()
-
-//    LaunchedEffect(state.searchResults) {
-//        searchResultsListState.animateScrollToItem(0)
-//    }
+    val scrollState = rememberLazyListState()
 
 
     Column(
@@ -121,7 +116,8 @@ fun ChatScreen(
                 ChatList(
                     state.searchResults,
                     state,
-                    {}
+                    {},
+                    scrollState = scrollState
                 )
             }
         }

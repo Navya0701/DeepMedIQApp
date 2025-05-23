@@ -40,17 +40,8 @@ fun ChatList(
     var animateLastItem by remember { mutableStateOf(false) }
 
     // LaunchedEffect to handle scrolling and animation
-    LaunchedEffect(chats.size) {
-        if (chats.isNotEmpty()) {
-            // Scroll to the last item
-            scrollState.animateScrollToItem(chats.lastIndex, scrollOffset = 0)
-            // Wait for scroll to complete
-            while (scrollState.isScrollInProgress) {
-                delay(50L)
-            }
-            // Trigger animation after scroll
-            animateLastItem = true
-        }
+    LaunchedEffect(state.searchResults){
+        scrollState.animateScrollToItem(state.searchResults.lastIndex, scrollOffset = 0)
     }
 
     // Handle loading state
@@ -68,7 +59,7 @@ fun ChatList(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Render all items except the last one
-            items(chats.dropLast(1), key = { chat -> chat.id }) { chat ->
+            items(chats, key = { chat -> chat.id }) { chat ->
                 ChatListItem(
                     chat = chat,
                     modifier = Modifier
@@ -80,23 +71,23 @@ fun ChatList(
             }
 
             // Render the last item with animation
-            if (chats.isNotEmpty()) {
-                item {
-                    AnimatedVisibility(
-                        visible = animateLastItem,
-                        enter = slideInVertically(animationSpec = tween(2000)) + fadeIn(animationSpec = tween(2000))
-                    ) {
-                        ChatListItem(
-                            chat = chats.last(),
-                            modifier = Modifier
-                                .widthIn(max = 700.dp)
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            onClick = { onBookClick(chats.last()) }
-                        )
-                    }
-                }
-            }
+//            if (chats.isNotEmpty()) {
+//                item {
+//                    AnimatedVisibility(
+//                        visible = animateLastItem,
+//                        enter = slideInVertically(animationSpec = tween(2000)) + fadeIn(animationSpec = tween(2000))
+//                    ) {
+//                        ChatListItem(
+//                            chat = chats.last(),
+//                            modifier = Modifier
+//                                .widthIn(max = 700.dp)
+//                                .fillMaxWidth()
+//                                .padding(horizontal = 16.dp),
+//                            onClick = { onBookClick(chats.last()) }
+//                        )
+//                    }
+//                }
+//            }
         }
     }
 }

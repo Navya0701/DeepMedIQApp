@@ -36,38 +36,18 @@ kotlin {
     }
     
     jvm("desktop")
-    
+
     sourceSets {
-        val commonMain by getting
-
-        val androidMain by getting
-
         val desktopMain by getting
 
-        val nativeMain by creating {
-            dependsOn(commonMain)
-        }
-
-        val iosX64Main by getting {
-            dependsOn(nativeMain)
-        }
-        val iosArm64Main by getting {
-            dependsOn(nativeMain)
-        }
-        val iosSimulatorArm64Main by getting {
-            dependsOn(nativeMain)
-        }
-
-
-        
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
             implementation(libs.ktor.client.okhttp)
         }
-
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -77,6 +57,7 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
+
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.jetbrains.compose.navigation)
@@ -89,8 +70,6 @@ kotlin {
 
             implementation(libs.bundles.ktor)
             implementation(libs.bundles.coil)
-
-
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
@@ -100,6 +79,7 @@ kotlin {
         nativeMain.dependencies {
             implementation(libs.ktor.client.darwin)
         }
+
         dependencies {
             ksp(libs.androidx.room.compiler)
         }
