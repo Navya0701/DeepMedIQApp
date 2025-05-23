@@ -41,8 +41,7 @@ object SampleMedicalData {
                                     page_content = "The risks of atrial fibrillation ablation include bleeding, infection..."
                                 )
                             )
-                        ),
-                        // Add other follow-up questions similarly
+                        )
                     )
                 )
             ),
@@ -65,29 +64,6 @@ object SampleMedicalData {
                     )
                 )
             )
-        ),
-        MedicalQASampleInput(
-            input = "65-year-old patient with ischemic cardiomyopathy with LV ejection fraction of 30%. Is primary prevention ICD indicated in this patient? What other factors should I consider in deciding the device type?",
-            answers = listOf(
-                Answer(
-                    answer = "Based on the ESC guidelines, an ICD is indicated for primary prevention in this patient...",
-                    context = listOf(
-                        Context(
-                            metadata = Metadata(
-                                year = 2024,
-                                region = "European Society of Cardiology (ESC)",
-                                title = "ESC Guidelines for the management of patients with ventricular arrhythmias...",
-                                page = 3363
-                            ),
-                            page_content = "The use of an implantable cardioverter-defibrillator (ICD) for primary prevention..."
-                        )
-                    ),
-                    followup_questions = listOf(
-                        // Add follow-up questions similarly
-                    )
-                )
-            )
-        ),
-        // Add other medical Q&A entries similarly
+        )
     )
 }
