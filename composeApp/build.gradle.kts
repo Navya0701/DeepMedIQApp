@@ -1,4 +1,3 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -12,7 +11,6 @@ plugins {
     alias(libs.plugins.room)
 }
 
-
 kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -20,7 +18,8 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
+    // Only iOS targets
     listOf(
         iosX64(),
         iosArm64(),
@@ -31,19 +30,12 @@ kotlin {
             isStatic = true
         }
     }
-    room {
-        schemaDirectory("$projectDir/schemas")
-    }
-    
-    jvm("desktop")
 
     sourceSets {
-        val desktopMain by getting
-
+        // Only keep androidMain, iosMain, and commonMain
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
-
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
             implementation(libs.ktor.client.okhttp)
@@ -57,9 +49,6 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
-
-            implementation(libs.androidx.lifecycle.viewmodel)
-            implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.jetbrains.compose.navigation)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.androidx.room.runtime)
@@ -67,21 +56,14 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             api(libs.koin.core)
-
             implementation(libs.bundles.ktor)
             implementation(libs.bundles.coil)
             implementation("io.ktor:ktor-client-websockets:2.3.12")
+        
         }
-        desktopMain.dependencies {
-            implementation(compose.desktop.currentOs)
-            implementation(libs.kotlinx.coroutines.swing)
-            implementation(libs.ktor.client.okhttp)
-
-        }
-        nativeMain.dependencies {
+        iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
         }
-
         dependencies {
             ksp(libs.androidx.room.compiler)
         }
@@ -99,6 +81,7 @@ android {
         versionCode = 1
         versionName = "1.0"
     }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -119,14 +102,6 @@ dependencies {
     debugImplementation(compose.uiTooling)
 }
 
-compose.desktop {
-    application {
-        mainClass = "org.deepmediq.MainKt"
-
-        nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "org.deepmediq"
-            packageVersion = "1.0.0"
-        }
-    }
+room {
+    schemaDirectory("$projectDir/schemas")
 }

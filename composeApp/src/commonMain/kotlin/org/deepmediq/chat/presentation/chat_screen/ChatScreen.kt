@@ -1,5 +1,6 @@
 package org.deepmediq.chat.presentation.chat_screen
 
+import DeepgramResponse
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,6 +49,15 @@ import org.deepmediq.core.presentation.DarkBlue
 
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import coil3.util.Logger
+import kotlinx.coroutines.launch
+import org.deepmediq.audio.AudioRecorder
+import org.deepmediq.audio.AudioDataCallback
+import org.deepmediq.audio.readAudioFileAsBytes
+import org.deepmediq.deepgram.DeepgramClient
+
 
 @Composable
 fun ChatScreenRoot(
@@ -83,26 +93,74 @@ fun ChatScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     val scrollState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+
+     // --- Recording State ---
+    var isRecording by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    var audioRecorder by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<AudioRecorder?>(null) }
+    val apiKey = "cf9dccc76a3fb206228317fde483a522433880f5" // Replace with your actual key
+
+      // --- Audio Callback ---
+    val audioCallback = object : AudioDataCallback {
+        override fun onAudioData(data: ByteArray) {}
+        override fun onTranscriptReceived(response: DeepgramResponse) {
+            TODO("Not yet implemented")
+        }
+
+        override fun onRecordingFinished(filePath: String?) {
+            if (filePath != null) {
+                coroutineScope.launch {
+                    try {
+                        // Platform-specific: read file as ByteArray
+                        val audioBytes = readAudioFileAsBytes(filePath)
+                        val client = DeepgramClient(apiKey)
+                        val rawResponse = client.transcribeAudio(audioBytes) // returns String
+                        val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+                        val transcript = json.decodeFromString<DeepgramResponse>(rawResponse)
+                        println(transcript.results.channels[0].alternatives[0].transcript)
+                        onAction(ChatScreenAction.OnSearchQueryChange(transcript.results.channels[0].alternatives[0].transcript))
+
+                    } catch (e: Exception) {
+                        // Handle error (show snackbar, etc.)
+                    }
+                }
+            }
+        }
+        override fun onError(error: Throwable) {
+            // Handle error (show snackbar, etc.)
+        }
+    }
+
+    fun toggleRecording() {
+        if (!isRecording) {
+            audioRecorder = AudioRecorder(audioCallback)
+            audioRecorder?.startRecording()
+            isRecording = true
+        } else {
+            audioRecorder?.stopRecording()
+            isRecording = false
+        }
+    }
+
 
     // In your ChatScreen.kt Composable
     LaunchedEffect(state.searchResults, state.isInitialLoad) {
         if (state.isInitialLoad && state.searchResults.isNotEmpty()) {
             launch { // Use the scope from LaunchedEffect
-                scrollState.animateScrollToItem(state.searchResults.lastIndex)
+                scrollState.scrollToItem(state.searchResults.lastIndex)
             }
             // No need to set isInitialLoad = false here anymore; ViewModel handles it.
         }
     }
 
 
-    Column(
+       Column(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBlue)
             .statusBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         Surface(
             modifier = Modifier
                 .weight(1f)
@@ -135,6 +193,8 @@ fun ChatScreen(
             onImeSearch = {
                 keyboardController?.hide()
             },
+            onMicClick = { toggleRecording() },
+            isRecording = isRecording,
             modifier = Modifier
                 .widthIn(max = 400.dp)
                 .fillMaxWidth()
