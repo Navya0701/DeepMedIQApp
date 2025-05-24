@@ -1,8 +1,10 @@
 package org.deepmediq.audio
 
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.memScoped
 import platform.Foundation.*
 
+@OptIn(ExperimentalForeignApi::class)
 actual suspend fun readAudioFileAsBytes(filePath: String): ByteArray {
     val data = NSData.dataWithContentsOfFile(filePath) ?: return ByteArray(0)
     val bytes = ByteArray(data.length.toInt())
