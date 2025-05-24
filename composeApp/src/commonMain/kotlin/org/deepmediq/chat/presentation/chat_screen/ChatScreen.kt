@@ -2,6 +2,9 @@ package org.deepmediq.chat.presentation.chat_screen
 
 import DeepgramResponse
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -51,6 +54,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.unit.sp
 import coil3.util.Logger
 import kotlinx.coroutines.launch
 import org.deepmediq.audio.AudioRecorder
@@ -144,8 +148,8 @@ fun ChatScreen(
 
 
     // In your ChatScreen.kt Composable
-    LaunchedEffect(state.searchResults, state.isInitialLoad) {
-        if (state.isInitialLoad && state.searchResults.isNotEmpty()) {
+    LaunchedEffect(state.searchResults ,state.isInitialLoad) {
+        if (state.searchResults.isNotEmpty() && state.isInitialLoad) {
             launch { // Use the scope from LaunchedEffect
                 scrollState.scrollToItem(state.searchResults.lastIndex)
             }
@@ -154,7 +158,7 @@ fun ChatScreen(
     }
 
 
-       Column(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBlue)
@@ -171,17 +175,18 @@ fun ChatScreen(
                 topEnd = 32.dp
             )
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                ChatList(
-                    state.searchResults,
-                    state,
-                    {},
-                    scrollState = scrollState
-                )
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    ChatList(
+                        state.searchResults,
+                        state,
+                        {},
+                        scrollState = scrollState
+                    )
+                }
             }
-        }
         ChatSearchBar(
             searchQuery = state.searchQuery,
             onSearchQueryChange = {

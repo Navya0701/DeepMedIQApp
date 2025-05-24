@@ -21,6 +21,7 @@ class ChatScreenViewModel(
 
     private val cachedChats = emptyList<Chat>()
 
+
     private val _state = MutableStateFlow(ChatScreenState())
     val state = _state
 
@@ -64,7 +65,7 @@ class ChatScreenViewModel(
                    "basic answer"
                )
                 _state.update { currentState ->
-                    currentState.copy(isLoading = true)
+                    currentState.copy(isLoading = true, isInitialLoad = false)
                 }
                 viewModelScope.launch {
                     chatRepository.fetchChats(action.question).onSuccess {
