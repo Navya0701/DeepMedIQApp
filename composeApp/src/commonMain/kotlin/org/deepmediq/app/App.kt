@@ -66,13 +66,15 @@ fun App(
                                 bottomEnd = 0.dp
                             )
                         )
+
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 0.dp, bottom = 10.dp)
                             .background(Color.White, shape = RoundedCornerShape(12.dp))
-                            .padding(16.dp),
+                            .padding(16.dp)
+                           ,
                         contentAlignment = Alignment.Center
                     ) {
                         Image(
@@ -163,7 +165,9 @@ fun App(
                                         contentDescription = "App Logo",
                                         modifier = Modifier
                                             .size(150.dp)
-                                            .clickable { },
+                                            .clickable {
+                                                viewModel.toggleInitialLoad()
+                                            },
                                         contentScale = ContentScale.Fit
                                     )
                                 }

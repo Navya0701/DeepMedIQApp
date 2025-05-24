@@ -47,6 +47,10 @@ class ChatScreenViewModel(
         }
     }
 
+    fun toggleInitialLoad(){
+        _state.update { it.copy(isInitialLoad = !it.isInitialLoad) }
+    }
+
 
 
     @OptIn(ExperimentalUuidApi::class)

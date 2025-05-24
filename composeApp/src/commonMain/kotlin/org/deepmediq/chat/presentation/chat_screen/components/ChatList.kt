@@ -5,6 +5,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -15,6 +17,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -23,10 +27,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import org.deepmediq.chat.domain.Chat
+import org.deepmediq.chat.presentation.chat_screen.ChatScreenAction
 import org.deepmediq.chat.presentation.chat_screen.ChatScreenState
+import org.deepmediq.chat.presentation.chat_screen.InitialQuestionItem
 
 @Composable
 fun ChatList(
@@ -40,8 +47,12 @@ fun ChatList(
     var animateLastItem by remember { mutableStateOf(false) }
 
     // LaunchedEffect to handle scrolling and animation
-    LaunchedEffect(state.searchResults){
-        scrollState.animateScrollToItem(state.searchResults.lastIndex, scrollOffset = 0)
+    LaunchedEffect(chats.size) {  // Watch the size of chats instead of searchResults
+        if (chats.isNotEmpty()) {
+            // Add a small delay to ensure the list is populated
+            kotlinx.coroutines.delay(100)
+            scrollState.animateScrollToItem(chats.lastIndex)
+        }
     }
 
     // Handle loading state
@@ -58,7 +69,6 @@ fun ChatList(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Render all items except the last one
             items(chats, key = { chat -> chat.id }) { chat ->
                 ChatListItem(
                     chat = chat,
@@ -72,3 +82,18 @@ fun ChatList(
         }
     }
 }
+
+data class ChatScreenState(
+    val searchQuery: String = "",
+    val searchResults: List<Chat> = emptyList(),
+    val favouriteChats: List<Chat> = emptyList(),
+    val isLoading: Boolean = false,
+    val isInitialLoad: Boolean = true,
+    val initialQuestions: List<String> = listOf(
+        "What is the best modality to screen for Barrett's esophagus?",
+        "What causes Crohn's?",
+        "What is the treatment for high grade dysplasia?",
+        "Which endoscopic procedures are high-risk?"
+    )
+)
+

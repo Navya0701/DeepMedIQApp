@@ -61,6 +61,7 @@ import org.deepmediq.audio.AudioRecorder
 import org.deepmediq.audio.AudioDataCallback
 import org.deepmediq.audio.readAudioFileAsBytes
 import org.deepmediq.deepgram.DeepgramClient
+import kotlin.math.round
 
 
 @Composable
@@ -146,17 +147,19 @@ fun ChatScreen(
         }
     }
 
-
-    // In your ChatScreen.kt Composable
-    LaunchedEffect(state.searchResults ,state.isInitialLoad) {
-        if (state.searchResults.isNotEmpty() && state.isInitialLoad) {
-            launch { // Use the scope from LaunchedEffect
-                scrollState.scrollToItem(state.searchResults.lastIndex)
+    // Add this LaunchedEffect to handle the transition
+    LaunchedEffect(state.isInitialLoad, state.searchResults) {
+        if (!state.isInitialLoad && state.searchResults.isNotEmpty()) {
+            coroutineScope.launch {
+                kotlinx.coroutines.delay(50)
+                try {
+                    scrollState.scrollToItem(state.searchResults.lastIndex)
+                } catch (e: Exception) {
+                    // Handle any scrolling errors
+                }
             }
-            // No need to set isInitialLoad = false here anymore; ViewModel handles it.
         }
     }
-
 
     Column(
         modifier = Modifier
@@ -175,10 +178,21 @@ fun ChatScreen(
                 topEnd = 32.dp
             )
         ) {
-
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (state.isInitialLoad) {
+                    // Show initial questions
+                    Column {
+                        state.initialQuestions.forEach { question ->
+                            InitialQuestionItem(
+                                question = question,
+                                onClick = { onAction(ChatScreenAction.OnSendClick(question)) }
+                            )
+                        }
+                    }
+                } else {
+                    // Show chat list
                     ChatList(
                         state.searchResults,
                         state,
@@ -187,6 +201,7 @@ fun ChatScreen(
                     )
                 }
             }
+        }
         ChatSearchBar(
             searchQuery = state.searchQuery,
             onSearchQueryChange = {
@@ -204,6 +219,31 @@ fun ChatScreen(
                 .widthIn(max = 400.dp)
                 .fillMaxWidth()
                 .padding(16.dp)
+        )
+    }
+}
+
+@Composable
+fun InitialQuestionItem(
+    question: String,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth() // Make the Box take the full available width
+            .padding(horizontal = 16.dp, vertical = 8.dp) // Outer padding for spacing around the item
+            .border( // Add the border
+                width = 1.dp, // Specify the border width
+                color = Color.Black, // Specify the border color
+                shape = MaterialTheme.shapes.medium // Optional: give the border rounded corners, aligning with Material theme
+            )
+            .clickable { onClick() } // Make the whole bordered area clickable
+            .padding(16.dp) // Inner padding between the border and the text
+    ) {
+        Text(
+            text = question,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.fillMaxWidth() // Ensure text also considers filling width if needed for alignment
         )
     }
 }
