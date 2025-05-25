@@ -1,4 +1,4 @@
-rootProject.name = "DeepMedIQ"
+rootProject.name = "CMP-Bookpedia"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

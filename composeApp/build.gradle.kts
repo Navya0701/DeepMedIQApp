@@ -1,3 +1,4 @@
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -18,8 +19,7 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-
-    // Only iOS targets
+    
     listOf(
         iosX64(),
         iosArm64(),
@@ -30,12 +30,20 @@ kotlin {
             isStatic = true
         }
     }
+    
+    jvm("desktop")
+
+    room {
+        schemaDirectory("$projectDir/schemas")
+    }
 
     sourceSets {
-        // Only keep androidMain, iosMain, and commonMain
+        val desktopMain by getting
+        
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
             implementation(libs.ktor.client.okhttp)
@@ -49,6 +57,9 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
+
+            implementation(libs.androidx.lifecycle.viewmodel)
+            implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.jetbrains.compose.navigation)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.androidx.room.runtime)
@@ -56,14 +67,19 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             api(libs.koin.core)
+
             implementation(libs.bundles.ktor)
             implementation(libs.bundles.coil)
-            implementation("io.ktor:ktor-client-websockets:2.3.12")
-        
         }
-        iosMain.dependencies {
+        desktopMain.dependencies {
+            implementation(compose.desktop.currentOs)
+            implementation(libs.kotlinx.coroutines.swing)
+            implementation(libs.ktor.client.okhttp)
+        }
+        nativeMain.dependencies {
             implementation(libs.ktor.client.darwin)
         }
+
         dependencies {
             ksp(libs.androidx.room.compiler)
         }
@@ -71,17 +87,17 @@ kotlin {
 }
 
 android {
-    namespace = "org.deepmediq"
+    namespace = "com.plcoding.bookpedia"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "org.deepmediq"
+        applicationId = "com.plcoding.bookpedia"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
-    }
 
+    }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -102,6 +118,14 @@ dependencies {
     debugImplementation(compose.uiTooling)
 }
 
-room {
-    schemaDirectory("$projectDir/schemas")
+compose.desktop {
+    application {
+        mainClass = "com.plcoding.bookpedia.MainKt"
+
+        nativeDistributions {
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            packageName = "com.plcoding.bookpedia"
+            packageVersion = "1.0.0"
+        }
+    }
 }
