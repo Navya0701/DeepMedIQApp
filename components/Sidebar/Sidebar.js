@@ -19,8 +19,8 @@ const Sidebar = ({
   onClose
 }) => {  const { width } = Dimensions.get('window');
   const slideAnim = React.useRef(new Animated.Value(-width)).current;
-  const [shouldRender, setShouldRender] = React.useState(isVisible);
-  React.useEffect(() => {
+  const [shouldRender, setShouldRender] = React.useState(isVisible);  React.useEffect(() => {
+    console.log('Sidebar isVisible changed to:', isVisible);
     if (isVisible) {
       setShouldRender(true);
       Animated.timing(slideAnim, {
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     padding: 12,
   },  overlay: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)', // Changed from transparent to semi-transparent
   },
   header: {
     flexDirection: 'row',

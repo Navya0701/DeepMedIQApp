@@ -221,8 +221,13 @@ const SearchBar = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <HeaderComponent onMenuPress={() => setIsSidebarOpen(true)} />
+      <View style={styles.container}>        <HeaderComponent onMenuPress={() => {
+          console.log('Menu button pressed! Setting sidebar open to true');
+          console.log('Current isSidebarOpen state:', isSidebarOpen);
+          setIsSidebarOpen(true);
+          console.log('After setting, isSidebarOpen should be true');
+        }} />
+
 
         <Sidebar 
           isVisible={isSidebarOpen}
