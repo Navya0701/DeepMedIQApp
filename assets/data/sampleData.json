@@ -1,0 +1,669 @@
+[ 
+  {
+    "input": "I have a 70 year-old patient with normal LV function with symptomatic paroxysmal atrial fibrillation. Comorbidities include hypertension and diabetes. Should I consider an atrial fibrillation ablation? Should I also consider a watchman device implantation?",
+    "answers": [
+      {
+        "answer": "Based on the 2023 guidelines, you may consider atrial fibrillation ablation for your patient, given their symptomatic paroxysmal atrial fibrillation and normal LV function. However, the decision should involve a thorough discussion with the patient about the potential benefits and risks, taking into account their specific comorbidities and treatment goals. Regarding the Watchman device, the primary focus should be on rhythm control strategies like ablation, and the Watchman device is generally considered for stroke prevention when oral anticoagulation is not viable, which is not indicated in this case.",
+        "context": [
+          {
+            "metadata": {
+              "year": 2023,
+              "region": "United States",
+              "title": "2023 Guideline for the Diagnosis and Management of Atrial Fibrillation",
+              "source": "Unknown"
+            },
+            "page_content": "Atrial fibrillation ablation may be considered for patients with symptomatic paroxysmal atrial fibrillation, especially when they have failed or are intolerant to at least one antiarrhythmic drug. Catheter ablation can be effective in maintaining sinus rhythm and improving symptoms and quality of life in such patients. The guideline suggests catheter ablation as a treatment option for symptomatic paroxysmal atrial fibrillation in patients with normal LV function, particularly after failure or intolerance to antiarrhythmic drugs."
+          }
+        ],
+        "followup_questions": [
+          {
+            "question": "What are the risks associated with atrial fibrillation ablation?",
+            "answer": "The risks associated with atrial fibrillation ablation include bleeding, infection, stroke, and damage to the heart or surrounding structures. Other potential risks include pulmonary vein stenosis, esophageal injury, and cardiac tamponade. It is essential to discuss these risks with the patient and weigh them against the potential benefits of the procedure.",
+            "context": [
+              {
+                "metadata": {
+                  "year": 2023,
+                  "region": "United States",
+                  "title": "2023 Guideline for the Diagnosis and Management of Atrial Fibrillation",
+                  "source": "Unknown"
+                },
+                "page_content": "The risks of atrial fibrillation ablation include bleeding, infection, stroke, and damage to the heart or surrounding structures. Potential complications such as pulmonary vein stenosis, esophageal injury, and cardiac tamponade should be considered and discussed with the patient."
+              }
+            ]
+          },
+          {
+            "question": "How effective is atrial fibrillation ablation in maintaining sinus rhythm?",
+            "answer": "Atrial fibrillation ablation is generally effective in maintaining sinus rhythm, with success rates ranging from 60% to 80%. The procedure can significantly improve symptoms and quality of life for patients with symptomatic paroxysmal atrial fibrillation, particularly when they have failed or are intolerant to antiarrhythmic drugs.",
+            "context": [
+              {
+                "metadata": {
+                  "year": 2023,
+                  "region": "United States",
+                  "title": "2023 Guideline for the Diagnosis and Management of Atrial Fibrillation",
+                  "source": "Unknown"
+                },
+                "page_content": "Atrial fibrillation ablation has success rates ranging from 60% to 80% in maintaining sinus rhythm. It can significantly improve symptoms and quality of life for patients with symptomatic paroxysmal atrial fibrillation, especially when they have failed or are intolerant to antiarrhythmic drugs."
+              }
+            ]
+          },
+          {
+            "question": "What lifestyle changes can help manage atrial fibrillation symptoms?",
+            "answer": "Lifestyle changes that can help manage atrial fibrillation symptoms include maintaining a healthy weight, engaging in regular physical activity, avoiding excessive alcohol and caffeine intake, managing stress, and adhering to a heart-healthy diet. Additionally, controlling comorbid conditions such as hypertension and diabetes is crucial in managing atrial fibrillation.",
+            "context": [
+              {
+                "metadata": {
+                  "year": 2023,
+                  "region": "United States",
+                  "title": "2023 Guideline for the Diagnosis and Management of Atrial Fibrillation",
+                  "source": "Unknown"
+                },
+                "page_content": "Lifestyle changes that can help manage atrial fibrillation symptoms include maintaining a healthy weight, regular physical activity, avoiding excessive alcohol and caffeine intake, stress management, and adhering to a heart-healthy diet. Controlling comorbid conditions such as hypertension and diabetes is also crucial in managing atrial fibrillation."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "65-year-old patient with ischemic cardiomyopathy with LV ejection fraction of 30%. Is primary prevention ICD indicated in this patient? What other factors should I consider in deciding the device type?",
+    "answers": [
+      {
+        "answer": "Based on the ESC guidelines, an ICD is indicated for primary prevention in this patient, given the LVEF of 30% and assuming other criteria such as NYHA class and optimal medical therapy are met. Before proceeding, ensure that the patient meets all necessary conditions and consider discussing the decision with the patient, taking into account their values and preferences.",
+        "context": [
+          {
+            "metadata": {
+              "year": 2024,
+              "region": "European Society of Cardiology (ESC)",
+              "title": "ESC Guidelines for the management of patients with ventricular arrhythmias and the prevention of sudden cardiac death",
+              "page": 3363,
+              "source": "Unknown"
+            },
+            "page_content": "The use of an implantable cardioverter-defibrillator (ICD) for primary prevention is generally indicated in patients with ischemic cardiomyopathy and a left ventricular ejection fraction (LVEF) ≤35% who are in New York Heart Association (NYHA) functional class II or III, provided they have been receiving optimal medical therapy for at least three months and have a life expectancy of more than one year."
+          }
+        ],
+        "followup_questions": [
+          {
+            "question": "What are the risks associated with ICD implantation?",
+            "answer": "The risks associated with ICD implantation include infection, bleeding, pneumothorax, lead dislodgement, and device malfunction. There is also a risk of inappropriate shocks, which can lead to psychological distress and reduced quality of life. It is important to discuss these risks with the patient and ensure they understand the potential complications.",
+            "context": [
+              {
+                "metadata": {
+                  "year": 2024,
+                  "region": "European Society of Cardiology (ESC)",
+                  "title": "ESC Guidelines for the management of patients with ventricular arrhythmias and the prevention of sudden cardiac death",
+                  "page": 3371,
+                  "source": "Unknown"
+                },
+                "page_content": "The risks of ICD implantation include infection, bleeding, pneumothorax, lead dislodgement, and device malfunction. Inappropriate shocks can also occur, leading to psychological distress and reduced quality of life."
+              }
+            ]
+          },
+          {
+            "question": "How effective is ICD in preventing sudden cardiac death?",
+            "answer": "ICDs are highly effective in preventing sudden cardiac death in patients at high risk of ventricular arrhythmias. Studies have shown that ICDs can reduce the risk of sudden cardiac death by approximately 50% in patients with ischemic cardiomyopathy and reduced LVEF. However, it is important to ensure that patients meet the criteria for ICD implantation and are receiving optimal medical therapy.",
+            "context": [
+              {
+                "metadata": {
+                  "year": 2024,
+                  "region": "European Society of Cardiology (ESC)",
+                  "title": "ESC Guidelines for the management of patients with ventricular arrhythmias and the prevention of sudden cardiac death",
+                  "page": 3364,
+                  "source": "Unknown"
+                },
+                "page_content": "ICDs are highly effective in preventing sudden cardiac death in patients at high risk of ventricular arrhythmias. They can reduce the risk of sudden cardiac death by approximately 50% in patients with ischemic cardiomyopathy and reduced LVEF."
+              }
+            ]
+          },
+          {
+            "question": "What are the alternatives to ICD for preventing sudden cardiac death?",
+            "answer": "Alternatives to ICD for preventing sudden cardiac death include optimal medical therapy with beta-blockers, ACE inhibitors, or ARBs, and aldosterone antagonists. In some cases, cardiac resynchronization therapy (CRT) may be considered for patients with heart failure and prolonged QRS duration. Lifestyle modifications and management of comorbid conditions are also important in reducing the risk of sudden cardiac death.",
+            "context": [
+              {
+                "metadata": {
+                  "year": 2024,
+                  "region": "European Society of Cardiology (ESC)",
+                  "title": "ESC Guidelines for the management of patients with ventricular arrhythmias and the prevention of sudden cardiac death",
+                  "page": 3365,
+                  "source": "Unknown"
+                },
+                "page_content": "Alternatives to ICD for preventing sudden cardiac death include optimal medical therapy with beta-blockers, ACE inhibitors, or ARBs, and aldosterone antagonists. Cardiac resynchronization therapy (CRT) may also be considered for patients with heart failure and prolonged QRS duration. Lifestyle modifications and management of comorbid conditions are important in reducing the risk of sudden cardiac death."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "65-year-old patient with ischemic cardiomyopathy with LV ejection fraction of 30%. Is primary prevention ICD indicated in this patient? Is a CRTD indicated?",
+    "answers": [
+      {
+        "answer": "Based on the ESC Guidelines, a primary prevention ICD is indicated for this 65-year-old patient with ischemic cardiomyopathy and an LVEF of 30%, assuming they are on optimal medical therapy and meet other criteria such as symptom classification and post-MI duration. Additionally, if the patient has a wide QRS complex, particularly with left bundle branch block, a CRT-D could be indicated to manage heart failure symptoms and improve outcomes.",
+        "context": [
+          {
+            "metadata": {
+              "year": 2022,
+              "region": "Europe",
+              "title": "ESC Guidelines on Cardiac Pacing and Cardiac Resynchronization Therapy"
+            },
+            "page_content": "Primary prevention ICD is typically indicated in patients with ischemic cardiomyopathy and an LVEF of 30% or less, provided they are on guideline-directed medical therapy (GDMT) and have a life expectancy of at least one year. CRT-D is particularly beneficial for patients with a QRS duration ≥130 ms, especially with left bundle branch block morphology, who remain symptomatic despite optimal medical therapy."
+          }
+        ],
+        "followup_questions": [
+          {
+            "question": "What are the benefits of CRT-D in patients with heart failure?",
+            "answer": "The benefits of CRT-D in patients with heart failure include improved symptoms, reduced hospitalization rates, and enhanced survival. CRT-D can help synchronize the contraction of the left and right ventricles, leading to more efficient heart function and improved cardiac output. It is particularly beneficial for patients with a wide QRS complex and left bundle branch block morphology.",
+            "context": [
+              {
+                "metadata": {
+                  "year": 2022,
+                  "region": "Europe",
+                  "title": "ESC Guidelines on Cardiac Pacing and Cardiac Resynchronization Therapy"
+                },
+                "page_content": "CRT-D is beneficial in heart failure patients with a wide QRS complex and left bundle branch block, improving symptoms, reducing hospitalization rates, and enhancing survival by synchronizing ventricular contractions and improving cardiac output."
+              }
+            ]
+          },
+          {
+            "question": "What are the risks and complications associated with CRT-D implantation?",
+            "answer": "The risks and complications associated with CRT-D implantation include infection, bleeding, lead dislodgement, pneumothorax, and device malfunction. Additionally, there is a risk of inappropriate shocks, which can cause pain and anxiety for the patient. It is important to discuss these risks with the patient and ensure they understand the potential complications.",
+            "context": [
+              {
+                "metadata": {
+                  "year": 2022,
+                  "region": "Europe",
+                  "title": "ESC Guidelines on Cardiac Pacing and Cardiac Resynchronization Therapy"
+                },
+                "page_content": "The risks and complications of CRT-D implantation include infection, bleeding, lead dislodgement, pneumothorax, device malfunction, and inappropriate shocks, which can cause pain and anxiety for the patient."
+              }
+            ]
+          },
+          {
+            "question": "How is the effectiveness of CRT-D monitored in patients?",
+            "answer": "The effectiveness of CRT-D is monitored through regular follow-up visits, echocardiograms, and device interrogations. Patients are evaluated for symptom improvement, changes in ejection fraction, and any occurrences of arrhythmias. Device settings may be adjusted based on the patient's response to therapy, and remote monitoring can also be used to track device performance and patient status.",
+            "context": [
+              {
+                "metadata": {
+                  "year": 2022,
+                  "region": "Europe",
+                  "title": "ESC Guidelines on Cardiac Pacing and Cardiac Resynchronization Therapy"
+                },
+                "page_content": "The effectiveness of CRT-D is monitored through regular follow-up visits, echocardiograms, and device interrogations, evaluating symptom improvement, ejection fraction changes, and arrhythmia occurrences. Device settings may be adjusted based on patient response, and remote monitoring can track device performance and patient status."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input":  "What should be the recommendation if a screening endoscopy for Barrett’s esophagus shows severe erosive esophagitis (Los Angeles grade C)?",
+    "answers": [
+      {
+        "answer": ". Year of publishing the guidelines: Region of the guidelines: \n\n*Factors Favoring Immediate Treatment for Severe Erosive Esophagitis (Los Angeles Grade C):\n   * High risk of progression to more severe esophageal damage if left untreated.\n   * Potential relief of symptoms such as pain, heartburn, or dysphagia.\n   * Prevention of complications like bleeding, stricture formation, or Barrett's esophagus progression.\n\n*Factors Favoring Conservative Management:\n   * Consideration of patient-specific factors such as the presence of comorbidities.\n   * Observation of lifestyle changes or dietary modifications before initiating aggressive treatment.\n\n*Important Considerations:\n   * Assessment of symptom severity and impact on quality of life.\n   * Evaluation of any underlying causes or contributing factors such as medications, dietary habits, or other medical conditions.\n   * Follow-up monitoring to assess the healing process and response to treatment.\n\n*Current Guidelines/Recommendations (if applicable):\n   * Initiation of proton pump inhibitor (PPI) therapy is commonly recommended for severe erosive esophagitis to promote healing and symptom relief.\n   * Lifestyle modifications such as dietary changes, weight loss, and avoiding triggers like alcohol and tobacco may be advised.\n   * Repeat endoscopy may be considered after a course of treatment to assess healing and rule out complications.\n\n*Recommendation:*\n   * Initiate treatment with a proton pump inhibitor (PPI) to address the severe erosive esophagitis and monitor the patient’s response. Follow up with lifestyle modifications and repeat endoscopy to ensure healing and check for complications.",
+       "context": [
+              {
+                  "metadata": {
+                      "page": 96,
+                      "source": "5908.pdf"
+                  },
+                  "page_content": "in up to 50% of patients.637,882,1175Observed asymptomatic\nesophageal ulcers were usually healed on repeat endoscopyat 2–3 weeks.\n1176One study reported endoscopy performed\non 267 patients who underwent RF ablation. The power onthe posterior wall was limited to 25 W. Among these pa-tients, 6 (2.2%) had either erythema ( n52) or a necrotic\nulcer ( n54) on endoscopy. Multivariate analysis revealed\nthat the distance between the LA and the esophagus was theonly independent predictor, although an LA isthmus lineand CS ablation showed a trend.\n900After treatment with a\nPPI (pantoprazole or esomeprazole) and sucralfate, allrecovered without development of an AEF. One study re-ported a higher incidence of esophageal injury among pa-tients undergoing AF ablation with general anesthesia\ncompared with conscious sedation.\n637It has been proposed\nthat this relationship re ﬂects the absence of pain feedback\nand reduced esophageal motility resulting from generalanesthesia."
+              },
+              {
+                  "metadata": {
+                      "page": 66,
+                      "source": "ACE"
+                  },
+                  "page_content": "mal lesions (diameter: 2 –16 mm) were observed in 14.6%\nof the patients.\n902These lesions only occurred when the intra-\nluminal esophageal temperature had reached more than\n41/C14C. The odds of an esophageal lesion increased by a factor\nof 1.36 (95% CI 1.07 –1.74; P5.012) for every 1/C14C rise in\ntemperature.\nGastrointestinal endoscopy in a cohort of 425 patients 1 to\n3 days after AF catheter ablation, in whom intraluminalesophageal temperatures higher than 41\n/C14C were recorded, re-\nvealed esophageal tissue lesions in 11.6% of asymptomaticpatients.\n903Hence, these observations suggest that asymp-\ntomatic patients could bene ﬁt from routine gastrointestinal\nendoscopy after RF catheter ablative therapy when the intra-luminal esophageal temperature during the procedure hasreached a certain target temperature, such as 41\n/C14C. However,"
+              },
+              {
+                  "metadata": {
+                      "page": 66,
+                      "source": "EUR"
+                  },
+                  "page_content": "endoscopy after RF catheter ablative therapy when the intra-luminal esophageal temperature during the procedure hasreached a certain target temperature, such as 41\n/C14C. However,\nthere are no reports on the value of this type of follow-upendoscopic examination after ablative therapy. Only onestudy did a follow-up endoscopy at least 7 days after the ﬁrst\nexamination in patients with an esophageal lesion diameter\n.5 mm and found regression of all 3168 lesions.\n903A PPI\nwas used in all the patients for 4 weeks after ablation.\nRole and Indications for CT Imaging for Diagnosis of\nAtrioesophageal FistulaAfter ablation, symptoms and ﬁndings suggesting the possi-\nbility of evolving AEF include chest pain, painful swallow-ing, fever, leukocytosis, TIA, and/or stroke typically\noccurring between 1 and 3 weeks postablation. If esophageal\ninjury is suspected, CT imaging with intravenous and water-soluble oral contrast is recommended.\n904,905,906Findings on"
+              },
+              {
+                  "metadata": {
+                      "page": 66,
+                      "source": "ASIA"
+                  },
+                  "page_content": "901Other mechanisms, such as\ntraumatic injury of the esophageal wall, could also play a po-tential role in ﬁstula formation, although there is no proof of\nthis concept. Prophylactic short-term use of PPIs after AFablation is assumed to be effective; however, further large\nrandomized studies are required to determine whether PPIs\nreduce AEFs. Because of the low event rate of AEFs, sucha study will not likely be performed. At the moment, PPI ther-apy is justi ﬁed as a singular preventive treatment.\nRole and Indications for Endoscopic Screening for Ulceration\nFollowing AF Ablation\nBecause AEF can cause septicemia and air embolism leading\nto death, early detection of esophageal tissue injuries is essen-tial. Data evaluating the role of gastrointestinal endoscopy fordetection of esophageal tissue lesions are limited. In 185 pa-tients who underwent gastrointestinal endoscopy after LA RFablative therapy, ulcer-like or hemorrhagic esophageal ther-"
+              }
+          ]
+      },
+      {
+        "answer": "It is a metabolic disorder that affects the way the body processes glucose, the main source of energy for cells.",
+        "context": [
+          {
+            "metadata": {"page": 5, "source": "Diabetes Source 2"},
+            "page_content": "Proper management of diabetes involves regular monitoring, medication, and lifestyle changes to prevent complications."
+          }
+        ]
+      }
+    ],
+    "related_questions": [
+      {
+        "input": "What are the symptoms of diabetes?",
+        "answers": [
+          {
+            "answer": "Common symptoms include increased thirst, frequent urination, and unexplained weight loss.",
+            "context": [
+              {
+                "metadata": {"page": 8, "source": "Diabetes Symptoms Source 1"},
+                "page_content": "Other symptoms can include blurred vision, fatigue, and slow healing of wounds."
+              }
+            ]
+          },
+          {
+            "answer": "Symptoms vary depending on the type, but early detection and treatment are key to managing the disease.",
+            "context": [
+              {
+                "metadata": {"page": 10, "source": "Diabetes Symptoms Source 2"},
+                "page_content": "In some cases, symptoms might not appear until blood sugar levels are significantly high."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "input": "What causes diabetes?",
+        "answers": [
+          {
+            "answer": "Type 1 diabetes is caused by an autoimmune reaction, while Type 2 diabetes is often linked to lifestyle factors and genetics.",
+            "context": [
+              {
+                "metadata": {"page": 3, "source": "Diabetes Causes Source 1"},
+                "page_content": "Obesity, lack of exercise, and family history are major risk factors for Type 2 diabetes."
+              }
+            ]
+          },
+          {
+            "answer": "Gestational diabetes develops during pregnancy and is influenced by hormonal changes and insulin resistance.",
+            "context": [
+              {
+                "metadata": {"page": 6, "source": "Diabetes Causes Source 2"},
+                "page_content": "Certain medical conditions, like polycystic ovary syndrome, can increase the risk of developing diabetes."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "input": "How is diabetes diagnosed?",
+        "answers": [
+          {
+            "answer": "Diabetes is diagnosed through blood tests such as fasting blood sugar, HbA1c, and glucose tolerance tests.",
+            "context": [
+              {
+                "metadata": {"page": 12, "source": "Diabetes Diagnosis Source 1"},
+                "page_content": "Regular screenings are recommended for individuals with a family history or other risk factors."
+              }
+            ]
+          },
+          {
+            "answer": "The HbA1c test provides an average of blood sugar levels over the past 2-3 months.",
+            "context": [
+              {
+                "metadata": {"page": 14, "source": "Diabetes Diagnosis Source 2"},
+                "page_content": "The oral glucose tolerance test measures blood sugar levels before and after consuming a sugary drink."
+              }
+            ],
+            "followup_questions": [
+              {
+                "question": "What are the treatment options for Barrett's esophagus?",
+                "answer": "Treatment options for Barrett's esophagus include proton pump inhibitors (PPIs) to reduce acid reflux, endoscopic therapies such as radiofrequency ablation or endoscopic mucosal resection, and in severe cases, surgical interventions like esophagectomy. Lifestyle modifications such as dietary changes and weight loss are also recommended to manage symptoms and prevent progression.",
+                "context": [
+                  {
+                    "metadata": {
+                      "page": 97,
+                      "source": "Barrett's Esophagus Treatment Guidelines 2022"
+                    },
+                    "page_content": "Barrett's esophagus treatment involves the use of PPIs, endoscopic therapies like radiofrequency ablation or endoscopic mucosal resection, and surgical interventions in severe cases. Lifestyle modifications are also important in managing symptoms and preventing progression."
+                  }
+                ]
+              },
+              {
+                "question": "How often should patients with Barrett's esophagus undergo surveillance endoscopy?",
+                "answer": "Patients with Barrett's esophagus should typically undergo surveillance endoscopy every 3-5 years to monitor for dysplasia or progression to esophageal adenocarcinoma. The frequency of endoscopy may be increased if there are signs of dysplasia or other risk factors present.",
+                "context": [
+                  {
+                    "metadata": {
+                      "page": 101,
+                      "source": "Surveillance Guidelines for Barrett's Esophagus 2023"
+                    },
+                    "page_content": "Surveillance endoscopy for Barrett's esophagus is recommended every 3-5 years, with increased frequency if dysplasia or other risk factors are present."
+                  }
+                ]
+              },
+              {
+                "question": "What lifestyle changes can help manage Barrett's esophagus symptoms?",
+                "answer": "Lifestyle changes that can help manage Barrett's esophagus symptoms include maintaining a healthy weight, avoiding foods and drinks that trigger reflux (such as alcohol, caffeine, and spicy foods), eating smaller meals, not lying down immediately after eating, elevating the head of the bed, and quitting smoking.",
+                "context": [
+                  {
+                    "metadata": {
+                      "page": 104,
+                      "source": "Lifestyle Management for Barrett's Esophagus 2023"
+                    },
+                    "page_content": "Managing Barrett's esophagus symptoms involves lifestyle changes such as maintaining a healthy weight, avoiding reflux triggers, eating smaller meals, not lying down after eating, elevating the head of the bed, and quitting smoking."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    
+    "input": "What is hypertension?",
+    "answers": [
+      {
+        "answer": "Hypertension is a condition where the force of the blood against the artery walls is too high, which can lead to heart disease and stroke.",
+        "context": [
+          {
+            "metadata": {"page": 1, "source": "Hypertension Source 1"},
+            "page_content": "Hypertension is often called a silent killer as it may not show symptoms but can cause significant damage over time."
+          }
+        ],
+        "followup_questions": [
+          {
+            "question": "What are the symptoms of hypertension?",
+            "answer": "Hypertension often does not have noticeable symptoms, which is why it is referred to as a silent killer. When symptoms do occur, they can include headaches, shortness of breath, nosebleeds, and flushing. However, these symptoms are not specific and usually do not occur until hypertension has reached a severe or life-threatening stage.",
+            "context": [
+              {
+                "metadata": {"page": 2, "source": "Hypertension Symptoms Source 1"},
+                "page_content": "Symptoms of hypertension can include headaches, shortness of breath, and nosebleeds, but these usually occur only when blood pressure reaches a dangerously high level."
+              }
+            ]
+          },
+          {
+            "question": "What are the risk factors for hypertension?",
+            "answer": "Risk factors for hypertension include age, family history, being overweight or obese, lack of physical activity, tobacco use, high-sodium diet, low potassium intake, excessive alcohol consumption, stress, and certain chronic conditions such as kidney disease or diabetes.",
+            "context": [
+              {
+                "metadata": {"page": 3, "source": "Hypertension Risk Factors Source 1"},
+                "page_content": "Common risk factors for hypertension include age, genetics, obesity, sedentary lifestyle, high-sodium diet, and excessive alcohol intake."
+              }
+            ]
+          },
+          {
+            "question": "How can hypertension be prevented?",
+            "answer": "Hypertension can be prevented by maintaining a healthy lifestyle, which includes eating a balanced diet low in sodium, engaging in regular physical activity, maintaining a healthy weight, limiting alcohol intake, avoiding tobacco use, managing stress, and monitoring blood pressure regularly.",
+            "context": [
+              {
+                "metadata": {"page": 4, "source": "Hypertension Prevention Source 1"},
+                "page_content": "Preventing hypertension involves lifestyle changes such as eating a healthy diet, reducing salt intake, exercising regularly, maintaining a healthy weight, and avoiding tobacco and excessive alcohol consumption."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "answer": "It is a common condition that affects the heart and blood vessels, often due to factors like age, diet, or lifestyle.",
+        "context": [
+          {
+            "metadata": {"page": 4, "source": "Hypertension Source 2"},
+            "page_content": "Lifestyle changes such as reducing salt intake and increasing physical activity are recommended to manage hypertension."
+          }
+        ]
+      }
+    ],
+    "related_questions": [
+      {
+        "input": "What causes hypertension?",
+        "answers": [
+          {
+            "answer": "The causes of hypertension can include genetics, poor diet, lack of exercise, and high stress levels.",
+            "context": [
+              {
+                "metadata": {"page": 5, "source": "Hypertension Causes Source 1"},
+                "page_content": "Obesity and excessive alcohol consumption can also contribute to the development of hypertension."
+              }
+            ]
+          },
+          {
+            "answer": "Hypertension may also be secondary to other conditions such as kidney disease or hormonal disorders.",
+            "context": [
+              {
+                "metadata": {"page": 7, "source": "Hypertension Causes Source 2"},
+                "page_content": "In some cases, high blood pressure can be caused by medications or other pre-existing health conditions."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "input": "How is hypertension treated?",
+        "answers": [
+          {
+            "answer": "Hypertension is treated with medications such as diuretics, ACE inhibitors, or beta-blockers, depending on the severity.",
+            "context": [
+              {
+                "metadata": {"page": 8, "source": "Hypertension Treatment Source 1"},
+                "page_content": "Lifestyle modifications such as a balanced diet, exercise, and stress reduction are also crucial in managing hypertension."
+              }
+            ]
+          },
+          {
+            "answer": "In some cases, surgery may be required to treat severe hypertension caused by underlying health issues.",
+            "context": [
+              {
+                "metadata": {"page": 9, "source": "Hypertension Treatment Source 2"},
+                "page_content": "Patient education on diet, exercise, and monitoring blood pressure regularly is essential in managing the condition."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "What is cancer?",
+    "answers": [
+      {
+        "answer": "Cancer is a disease in which abnormal cells divide without control and can spread to other parts of the body.",
+        "context": [
+          {
+            "metadata": {"page": 1, "source": "Cancer Source 1"},
+            "page_content": "Cancer can develop in nearly any part of the body and is typically classified based on the area where it begins."
+          }
+        ],
+        "followup_questions": [
+          {
+            "question": "What are the risk factors for cancer?",
+            "answer": "Risk factors for cancer include genetic predisposition, lifestyle factors such as smoking, poor diet, and lack of physical activity, environmental exposures like radiation and carcinogens, and infections such as human papillomavirus (HPV). Age and family history also play significant roles in cancer risk.",
+            "context": [
+              {
+                "metadata": {"page": 2, "source": "Cancer Risk Factors Source 1"},
+                "page_content": "Common risk factors for cancer include genetic mutations, lifestyle choices such as smoking and diet, and environmental exposures like radiation and carcinogens."
+              }
+            ]
+          },
+          {
+            "question": "How is cancer diagnosed?",
+            "answer": "Cancer is diagnosed through various methods, including imaging tests like CT scans and MRIs, biopsy procedures to examine tissue samples, blood tests to detect cancer markers, and genetic testing to identify mutations. Early detection through regular screenings is crucial for improving treatment outcomes.",
+            "context": [
+              {
+                "metadata": {"page": 3, "source": "Cancer Diagnosis Source 1"},
+                "page_content": "Diagnosis of cancer typically involves imaging tests, biopsies, blood tests, and genetic testing to identify the presence and type of cancer."
+              }
+            ]
+          },
+          {
+            "question": "What are the common treatments for cancer?",
+            "answer": "Common treatments for cancer include surgery to remove tumors, chemotherapy to kill cancer cells, radiation therapy to target specific areas, and immunotherapy to boost the body's immune response. Targeted therapies that focus on specific genetic mutations and palliative care to manage symptoms are also important components of cancer treatment.",
+            "context": [
+              {
+                "metadata": {"page": 4, "source": "Cancer Treatment Source 1"},
+                "page_content": "Treatment options for cancer include surgery, chemotherapy, radiation therapy, immunotherapy, and targeted therapies based on the specific type and stage of cancer."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "answer": "It involves the uncontrolled growth of cells that can form tumors or invade other parts of the body through the bloodstream.",
+        "context": [
+          {
+            "metadata": {"page": 3, "source": "Cancer Source 2"},
+            "page_content": "Genetic mutations are one of the main causes of cancer, along with environmental and lifestyle factors."
+          }
+        ]
+      }
+    ],
+    "related_questions": [
+      {
+        "input": "What causes cancer?",
+        "answers": [
+          {
+            "answer": "Cancer can be caused by genetic mutations, environmental exposures, and lifestyle factors such as smoking or poor diet.",
+            "context": [
+              {
+                "metadata": {"page": 4, "source": "Cancer Causes Source 1"},
+                "page_content": "Exposure to carcinogens, such as tobacco smoke or radiation, is a well-known risk factor for cancer."
+              }
+            ]
+          },
+          {
+            "answer": "Infections, such as human papillomavirus (HPV), are linked to certain types of cancer, like cervical cancer.",
+            "context": [
+              {
+                "metadata": {"page": 6, "source": "Cancer Causes Source 2"},
+                "page_content": "Lifestyle factors such as lack of physical activity and obesity are also contributing factors to cancer development."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "input": "How is cancer treated?",
+        "answers": [
+          {
+            "answer": "Cancer treatment includes surgery, chemotherapy, radiation therapy, and immunotherapy, depending on the type and stage of cancer.",
+            "context": [
+              {
+                "metadata": {"page": 7, "source": "Cancer Treatment Source 1"},
+                "page_content": "Personalized treatment plans are often developed based on the patient's specific cancer type and overall health."
+              }
+            ]
+          },
+          {
+            "answer": "Some cancers may also be treated with targeted therapies that aim to block the growth of cancer cells while minimizing damage to healthy cells.",
+            "context": [
+              {
+                "metadata": {"page": 9, "source": "Cancer Treatment Source 2"},
+                "page_content": "Palliative care is often used to relieve symptoms and improve the quality of life for patients with advanced cancer."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "What is COVID-19?",
+    "answers": [
+      {
+        "answer": "COVID-19 is a respiratory illness caused by the SARS-CoV-2 virus, primarily spread through droplets when an infected person coughs or sneezes.",
+        "context": [
+          {
+            "metadata": {"page": 2, "source": "COVID-19 Source 1"},
+            "page_content": "COVID-19 can cause a range of symptoms, from mild cold-like symptoms to severe pneumonia, and can be fatal in some cases."
+          }
+        ],
+        "followup_questions": [
+          {
+            "question": "How is COVID-19 diagnosed?",
+            "answer": "COVID-19 is diagnosed through various tests, including PCR (polymerase chain reaction) tests, which detect the virus's genetic material, and antigen tests, which detect specific proteins on the surface of the virus. PCR tests are considered the gold standard due to their high sensitivity and specificity. Additionally, antibody tests can determine if a person had a past infection by detecting antibodies in the blood.",
+            "context": [
+              {
+                "metadata": {"page": 3, "source": "COVID-19 Diagnosis Source 1"},
+                "page_content": "PCR tests are highly accurate and used to confirm current infections, while antibody tests are used to detect past infections by identifying antibodies in the blood."
+              }
+            ]
+          },
+          {
+            "question": "What are the long-term effects of COVID-19?",
+            "answer": "Long-term effects of COVID-19, often referred to as 'long COVID,' can include fatigue, difficulty breathing, chest pain, joint pain, and cognitive issues such as brain fog. Some individuals may also experience ongoing symptoms like loss of taste and smell, sleep disturbances, and depression or anxiety. The severity and duration of these symptoms can vary, and ongoing medical follow-up may be necessary.",
+            "context": [
+              {
+                "metadata": {"page": 4, "source": "COVID-19 Long-term Effects Source 1"},
+                "page_content": "Long COVID can result in prolonged symptoms such as fatigue, cognitive impairment, and respiratory issues, affecting quality of life and requiring extended medical care."
+              }
+            ]
+          },
+          {
+            "question": "How can COVID-19 be prevented?",
+            "answer": "COVID-19 prevention measures include vaccination, wearing masks, maintaining physical distancing, practicing hand hygiene, and avoiding crowded or poorly ventilated spaces. Vaccination is the most effective method to prevent severe illness and reduce the spread of the virus. Public health guidelines also recommend frequent cleaning and disinfection of surfaces and staying home if symptomatic or exposed to the virus.",
+            "context": [
+              {
+                "metadata": {"page": 5, "source": "COVID-19 Prevention Source 1"},
+                "page_content": "Preventive measures such as vaccination, mask-wearing, physical distancing, and hand hygiene are crucial in reducing the spread of COVID-19 and protecting public health."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "answer": "It affects the lungs and can cause difficulty breathing, fever, fatigue, and loss of taste and smell.",
+        "context": [
+          {
+            "metadata": {"page": 4, "source": "COVID-19 Source 2"},
+            "page_content": "The virus is highly contagious and has led to a global pandemic, with millions of confirmed cases worldwide."
+          }
+        ]
+      }
+    ],
+    "related_questions": [
+      {
+        "input": "How is COVID-19 transmitted?",
+        "answers": [
+          {
+            "answer": "COVID-19 is primarily transmitted through respiratory droplets from coughing, sneezing, or talking.",
+            "context": [
+              {
+                "metadata": {"page": 5, "source": "COVID-19 Transmission Source 1"},
+                "page_content": "Close contact with infected individuals or touching contaminated surfaces can also lead to transmission."
+              }
+            ]
+          },
+          {
+            "answer": "Airborne transmission may occur in certain settings, particularly in poorly ventilated areas or crowded spaces.",
+            "context": [
+              {
+                "metadata": {"page": 6, "source": "COVID-19 Transmission Source 2"},
+                "page_content": "Preventive measures include wearing masks, maintaining physical distance, and hand hygiene."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "input": "What are the symptoms of COVID-19?",
+        "answers": [
+          {
+            "answer": "Common symptoms of COVID-19 include fever, dry cough, fatigue, and difficulty breathing.",
+            "context": [
+              {
+                "metadata": {"page": 7, "source": "COVID-19 Symptoms Source 1"},
+                "page_content": "Symptoms may appear 2-14 days after exposure to the virus."
+              }
+            ]
+          },
+          {
+            "answer": "In some cases, COVID-19 can lead to severe complications such as pneumonia, acute respiratory distress syndrome (ARDS), or organ failure.",
+            "context": [
+              {
+                "metadata": {"page": 9, "source": "COVID-19 Symptoms Source 2"},
+                "page_content": "Certain populations, such as the elderly and those with underlying health conditions, are at higher risk of severe outcomes."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
