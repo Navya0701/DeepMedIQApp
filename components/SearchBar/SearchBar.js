@@ -147,7 +147,7 @@ const SearchBar = () => {
           if (pageY > 0) {
             // Added check for pageY to prevent scrolling to 0,0 if measure fails initially
             // The offset (e.g., -100) can be adjusted based on header height or desired padding
-            const yOffset = pageY - (Platform.OS === 'ios' ? 60 : 80); // Adjust as needed
+            const yOffset = pageY - (Platform.OS === 'ios' ? 60 : 85); // Adjust as needed
             scrollViewRef.current.scrollTo({
               y: Math.max(0, yOffset),
               animated: false, // Instant scroll
@@ -221,7 +221,8 @@ const SearchBar = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>        <HeaderComponent onMenuPress={() => {
+      <View style={styles.container}>       
+         <HeaderComponent onMenuPress={() => {
           console.log('Menu button pressed! Setting sidebar open to true');
           console.log('Current isSidebarOpen state:', isSidebarOpen);
           setIsSidebarOpen(true);

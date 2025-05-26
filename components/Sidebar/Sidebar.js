@@ -7,9 +7,9 @@ import {
   StyleSheet, 
   Image, 
   Animated, 
-  Easing, 
+  Dimensions ,
   Platform,
-  Dimensions 
+  Easing
 } from 'react-native';
 
 const Sidebar = ({ 
@@ -17,34 +17,23 @@ const Sidebar = ({
   onHistoryItemClick,
   isVisible,
   onClose
-}) => {  const { width } = Dimensions.get('window');
+}) => {
+  const { width } = Dimensions.get('window');
   const slideAnim = React.useRef(new Animated.Value(-width)).current;
-  const [shouldRender, setShouldRender] = React.useState(isVisible);  React.useEffect(() => {
-    console.log('Sidebar isVisible changed to:', isVisible);
-    if (isVisible) {
-      setShouldRender(true);
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 600, // Slower, smoother opening
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true
-      }).start();
-    } else {
-      Animated.timing(slideAnim, {
-        toValue: -width,
-        duration: 600, // Slower, smoother closing
-        easing: Easing.out(Easing.ease), // Use the same easing for closing
-        useNativeDriver: true
-      }).start(() => {
-        setShouldRender(false); // Only hide after animation completes
-      });
-    }
-  }, [isVisible]);
+
+  React.useEffect(() => {
+    Animated.timing(slideAnim, {
+      toValue: isVisible ? 0 : -width,
+      duration: 300,
+      useNativeDriver: true,
+      easing: Easing.out(Easing.ease),
+    }).start();
+  }, [isVisible, width]);
+
+  if (!isVisible) return null;
 
   const truncateQuery = (q, len = 20) => 
     q.length > len ? `${q.substring(0, len)}...` : q;
-
-  if (!shouldRender) return null;
 
   return (
     <View style={styles.sidebarContainer}>
@@ -101,7 +90,7 @@ const Sidebar = ({
       {/* Overlay */}
       <TouchableOpacity
         style={styles.overlay}
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={onClose}
       />
     </View>
@@ -122,35 +111,33 @@ const styles = StyleSheet.create({
     width: Dimensions.get('window').width * 0.85,
     height: '100%',
     backgroundColor: 'transparent',
-    padding: 8,
   },
   mainContainer: {
     flex: 1,
     backgroundColor: '#000',
-    borderRadius: 12,
-    padding: 12,
-  },  overlay: {
+    padding: 16,
+  },
+  overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)', // Changed from transparent to semi-transparent
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
-    paddingTop: Platform.OS === 'ios' ? 40 : 16,
+    marginBottom: 20,
+    paddingTop: Platform.OS === 'ios' ? 40 : 20,
   },
   logo: {
     width: 180,
     height: 40,
-    marginLeft: 16,
-    marginRight: 16,
-    paddingVertical: 8,
+    marginLeft: 8,
     backgroundColor: '#fff',
     borderRadius: 40,
+    padding: 8,
   },
   closeButton: {
-    padding: 8,
+    padding: 10,
   },
   closeIcon: {
     fontSize: 24,
@@ -159,12 +146,9 @@ const styles = StyleSheet.create({
   },
   historyContainer: {
     flex: 1,
-    backgroundColor: '#000',
-    borderRadius: 8,
-    padding: 12,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 16,
     color: '#fff',
@@ -178,7 +162,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#333',
   },
   historyText: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#fff',
   },
   emptyText: {
@@ -186,6 +170,7 @@ const styles = StyleSheet.create({
     color: '#aaa',
     textAlign: 'center',
     marginTop: 20,
+    fontSize: 16,
   },
 });
 
