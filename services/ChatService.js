@@ -3,7 +3,7 @@ import { Alert } from "react-native";
 
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL;
 
-export const fetchChatResponse = async (searchQuery) => {
+export const fetchChatResponse = async (searchQuery, signal) => {
   if (!API_URL) {
     Alert.alert("Error", "API URL is not configured.");
     console.error("API URL is not configured.");
@@ -19,6 +19,7 @@ export const fetchChatResponse = async (searchQuery) => {
           Accept: "application/json",
         },
         body: JSON.stringify({ message: searchQuery }), // Ensure body is correctly stringified
+        signal, // Pass abort signal
       }
     );
 
@@ -41,6 +42,10 @@ export const fetchChatResponse = async (searchQuery) => {
     // Just return the data as is
     return data;
   } catch (error) {
+    if (error.name === "AbortError") {
+      // Silently ignore abort errors (user stopped response)
+      return null;
+    }
     console.error("Fetch chat response error:", error);
     Alert.alert("Error", `Failed to get chat response: ${error.message}`);
     return null; // Or throw error to be caught by caller
