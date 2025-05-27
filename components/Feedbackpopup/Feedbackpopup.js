@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Modal,
@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
   TextInput,
   StyleSheet,
-  ScrollView
-} from 'react-native';
+  ScrollView,
+} from "react-native";
 
 const reasons = [
   "Great Response !",
@@ -20,8 +20,8 @@ const reasons = [
 ];
 
 const FeedbackPopup = ({ isOpen, onClose, onSubmitFeedback }) => {
-  const [feedback, setFeedback] = useState('');
-  const [selectedReason, setSelectedReason] = useState('');
+  const [feedback, setFeedback] = useState("");
+  const [selectedReason, setSelectedReason] = useState("");
 
   const handleSubmit = () => {
     if (onSubmitFeedback) {
@@ -32,17 +32,25 @@ const FeedbackPopup = ({ isOpen, onClose, onSubmitFeedback }) => {
 
   return (
     <Modal visible={isOpen} animationType="slide" transparent>
-      <View style={styles.overlay}>
+      <View style={styles.overlay} pointerEvents="box-none">
         <View style={styles.popup}>
           <Text style={styles.title}>Submit Your Feedback</Text>
-          <ScrollView style={{ maxHeight: 200 }}>
+          <ScrollView
+            style={styles.radioList}
+            contentContainerStyle={{ paddingBottom: 0 }}
+          >
             {reasons.map((reason) => (
               <TouchableOpacity
                 key={reason}
                 style={styles.radioContainer}
                 onPress={() => setSelectedReason(reason)}
               >
-                <View style={[styles.radioCircle, selectedReason === reason && styles.selected]} />
+                <View
+                  style={[
+                    styles.radioCircle,
+                    selectedReason === reason && styles.selected,
+                  ]}
+                />
                 <Text style={styles.radioText}>{reason}</Text>
               </TouchableOpacity>
             ))}
@@ -59,7 +67,10 @@ const FeedbackPopup = ({ isOpen, onClose, onSubmitFeedback }) => {
             <TouchableOpacity style={styles.button} onPress={handleSubmit}>
               <Text style={styles.buttonText}>Submit</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.button, styles.closeBtn]} onPress={onClose}>
+            <TouchableOpacity
+              style={[styles.button, styles.closeBtn]}
+              onPress={onClose}
+            >
               <Text style={styles.buttonText}>Close</Text>
             </TouchableOpacity>
           </View>
@@ -72,66 +83,93 @@ const FeedbackPopup = ({ isOpen, onClose, onSubmitFeedback }) => {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0,0,0,0.4)", // shadow effect
+    justifyContent: "center",
+    alignItems: "center",
     padding: 16,
   },
   popup: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 12,
-    width: '100%',
+    backgroundColor: "white",
+    padding: 24,
+    borderRadius: 16,
+    width: 360,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 8,
+    alignItems: "stretch", // allow children to stretch
   },
   title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 12,
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 18,
+    color: "#222",
+    textAlign: "center",
+  },
+  radioList: {
+    marginBottom: 8,
   },
   radioContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+    alignSelf: "flex-start",
+    maxWidth: "100%",
   },
   radioCircle: {
     height: 18,
     width: 18,
     borderRadius: 9,
     borderWidth: 2,
-    borderColor: '#333',
+    borderColor: "#333",
     marginRight: 10,
+    backgroundColor: "#fff",
   },
   selected: {
-    backgroundColor: '#333',
+    backgroundColor: "#333",
   },
   radioText: {
     fontSize: 16,
+    color: "#222",
+    flexShrink: 1,
+    flexWrap: "wrap",
   },
   textInput: {
     marginTop: 12,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 8,
     padding: 10,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
+    minHeight: 60,
+    width: "100%",
+    fontSize: 15,
+    backgroundColor: "#fafafa",
+    color: "#222",
   },
   buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 16,
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 18,
+    width: "100%",
   },
   button: {
-    backgroundColor: '#333',
+    backgroundColor: "#43b04a", // green for submit
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 28,
     borderRadius: 8,
+    marginHorizontal: 8,
+    minWidth: 100,
+    alignItems: "center",
   },
   closeBtn: {
-    backgroundColor: '#777',
+    backgroundColor: "#e74c3c", // red for close
   },
   buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
 

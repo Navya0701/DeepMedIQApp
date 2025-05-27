@@ -1,93 +1,133 @@
-import React from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  ScrollView, 
-  StyleSheet, 
-  Image, 
-  Animated, 
-  Dimensions ,
+import React from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Image,
+  Animated,
+  Dimensions,
   Platform,
-  Easing
-} from 'react-native';
+  Easing,
+} from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
 
-const Sidebar = ({ 
-  searchHistory = [], 
-  onHistoryItemClick,
+const Sidebar = ({
+  sessions = [],
+  selectedSessionId,
+  onSessionSelect,
+  onNewSession,
+  onSessionDelete,
+  onClearAllSessions,
   isVisible,
-  onClose
+  onClose,
 }) => {
-  const { width } = Dimensions.get('window');
-  const slideAnim = React.useRef(new Animated.Value(-width)).current;
+  const { width } = Dimensions.get("window");
+  // Animation and flicker-free rendering for sidebar
+  const slideAnim = React.useRef(
+    new Animated.Value(isVisible ? 0 : -width)
+  ).current;
+  const [shouldRender, setShouldRender] = React.useState(isVisible);
 
   React.useEffect(() => {
     Animated.timing(slideAnim, {
       toValue: isVisible ? 0 : -width,
-      duration: 300,
+      duration: 220, // Smoother and a bit faster
       useNativeDriver: true,
-      easing: Easing.out(Easing.ease),
+      easing: Easing.inOut(Easing.cubic),
     }).start();
   }, [isVisible, width]);
 
-  if (!isVisible) return null;
-
-  const truncateQuery = (q, len = 20) => 
-    q.length > len ? `${q.substring(0, len)}...` : q;
+  React.useEffect(() => {
+    if (isVisible) setShouldRender(true);
+    else {
+      const timeout = setTimeout(() => setShouldRender(false), 220);
+      return () => clearTimeout(timeout);
+    }
+  }, [isVisible]);
+  if (!shouldRender) return null;
 
   return (
     <View style={styles.sidebarContainer}>
-      <Animated.View 
+      <Animated.View
         style={[
           styles.sidebar,
-          { transform: [{ translateX: slideAnim }] }
+          { transform: [{ translateX: slideAnim }] },
+          {
+            shadowOpacity: 0.18,
+            shadowRadius: 8,
+            shadowColor: "#000",
+            elevation: 8,
+          },
         ]}
       >
-        {/* Main Black Container */}
         <View style={styles.mainContainer}>
-          {/* Header with Logo */}
           <View style={styles.header}>
-            <Image
-              source={require('../../assets/images/DeepMedIQ-long.jpeg')}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Text style={styles.closeIcon}>✕</Text>
+            <TouchableOpacity
+              onPress={onNewSession}
+              style={{ marginRight: 8 }}
+              accessibilityLabel="New conversation"
+            >
+              <Image
+                source={require("../../assets/images/DeepMedIQ-long.jpeg")}
+                style={styles.logo}
+                resizeMode="contain"
+              />
             </TouchableOpacity>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <TouchableOpacity
+                onPress={onClearAllSessions}
+                style={styles.clearAllButton}
+                accessibilityLabel="Clear all history"
+              >
+                <MaterialIcons name="delete-sweep" size={28} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                <Text style={styles.closeIcon}>✕</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
-          {/* History Section */}
           <View style={styles.historyContainer}>
             <Text style={styles.sectionTitle}>
-              History ({searchHistory.length} items)
+              Sessions ({sessions.length} items)
             </Text>
-            
             <ScrollView style={styles.historyScroll}>
-              {searchHistory.length > 0 ? (
-                searchHistory.map((query, i) => (
-                  <TouchableOpacity
-                    key={i}
-                    style={styles.historyItem}
-                    onPress={() => {
-                      onHistoryItemClick(query);
-                      onClose();
-                    }}
+              {sessions.length > 0 ? (
+                sessions.map((session, i) => (
+                  <View
+                    key={session.id}
+                    style={[
+                      styles.historyItem,
+                      session.id === selectedSessionId && {
+                        backgroundColor: "#1976D2",
+                      },
+                    ]}
                   >
-                    <Text style={styles.historyText}>
-                      {truncateQuery(query)}
-                    </Text>
-                  </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.textContainer}
+                      onPress={() => onSessionSelect(session.id)}
+                    >
+                      <Text style={styles.historyText} numberOfLines={2}>
+                        {session.headline || "New Chat"}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => onSessionDelete(session.id)}
+                      style={styles.deleteIconContainer}
+                    >
+                      <MaterialIcons name="delete" size={22} color="#ff6666" />
+                    </TouchableOpacity>
+                  </View>
                 ))
               ) : (
-                <Text style={styles.emptyText}>No search history yet</Text>
+                <Text style={styles.emptyText}>No sessions yet</Text>
               )}
             </ScrollView>
           </View>
         </View>
       </Animated.View>
-      
-      {/* Overlay */}
       <TouchableOpacity
         style={styles.overlay}
         activeOpacity={0.5}
@@ -99,40 +139,40 @@ const Sidebar = ({
 
 const styles = StyleSheet.create({
   sidebarContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
-    width: '100%',
-    height: '100%',
-    flexDirection: 'row',
+    width: "100%",
+    height: "100%",
+    flexDirection: "row",
     zIndex: 2000,
   },
   sidebar: {
-    width: Dimensions.get('window').width * 0.85,
-    height: '100%',
-    backgroundColor: 'transparent',
+    width: Dimensions.get("window").width * 0.85,
+    height: "100%",
+    backgroundColor: "transparent",
   },
   mainContainer: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: "#000",
     padding: 16,
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 20,
-    paddingTop: Platform.OS === 'ios' ? 40 : 20,
+    paddingTop: Platform.OS === "ios" ? 40 : 20,
   },
   logo: {
     width: 180,
     height: 40,
     marginLeft: 8,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 40,
     padding: 8,
   },
@@ -141,36 +181,56 @@ const styles = StyleSheet.create({
   },
   closeIcon: {
     fontSize: 24,
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
   },
   historyContainer: {
     flex: 1,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 16,
-    color: '#fff',
+    color: "#fff",
   },
   historyScroll: {
     flex: 1,
   },
   historyItem: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    backgroundColor: "#333",
+    borderRadius: 8,
+    marginBottom: 10,
+    padding: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  textContainer: {
+    flex: 1,
   },
   historyText: {
     fontSize: 16,
-    color: '#fff',
+    color: "#fff",
+    fontWeight: "bold",
+    flexWrap: "wrap",
   },
   emptyText: {
-    fontStyle: 'italic',
-    color: '#aaa',
-    textAlign: 'center',
+    fontStyle: "italic",
+    color: "#aaa",
+    textAlign: "center",
     marginTop: 20,
     fontSize: 16,
+  },
+  deleteIconContainer: {
+    marginLeft: 10,
+    padding: 4,
+  },
+  clearAllButton: {
+    marginRight: 16,
   },
 });
 

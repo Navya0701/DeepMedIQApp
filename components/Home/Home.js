@@ -1,21 +1,31 @@
-import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import SearchBar from '../SearchBar/SearchBar';
+import React, { useState, useEffect } from "react";
+import { View, StyleSheet, Image } from "react-native";
+import SearchBar from "../SearchBar/SearchBar";
 
 export default function Home() {
-  const [query, setQuery] = useState('');
+  const [showSplash, setShowSplash] = useState(true);
 
-  const handleSearch = (searchQuery) => {
-    if (searchQuery.trim() === '') return;
-  };
+  useEffect(() => {
+    // Simulate splash screen for 1.5 seconds
+    const timer = setTimeout(() => setShowSplash(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (showSplash) {
+    return (
+      <View style={styles.splashContainer}>
+        <Image
+          source={require("../../assets/images/DeepMedIQ-small.jpeg")}
+          style={styles.splashLogo}
+          resizeMode="contain"
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <SearchBar
-        // query={query}
-        // setQuery={setQuery}
-        // handleSearch={handleSearch}
-      />
+      <SearchBar />
     </View>
   );
 }
@@ -23,11 +33,21 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
+  },
+  splashContainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  splashLogo: {
+    width: 140,
+    height: 140,
   },
   contentRow: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   scrollContent: {
     padding: 12,

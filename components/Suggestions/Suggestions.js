@@ -5,7 +5,7 @@ const Suggestions = ({ onSuggestionClick }) => {
   const suggestions = [
     "What is the best modality to screen for Barrett's esophagus?",
     "What causes Crohn's?",
-    "What is the treatment for hi// filepath: d:\MedCopilot\MedCopilotR2\components\Suggestions\Suggestions.jsade dysplasia?",
+    "What is the treatment for dysplasia?",
     "What endoscopic procedures are high/low-risk for anticoagulants?"
   ];
 

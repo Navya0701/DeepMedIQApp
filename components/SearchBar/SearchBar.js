@@ -8,25 +8,25 @@ import {
   Keyboard,
   Alert,
   Animated,
-  LayoutAnimation, 
+  LayoutAnimation,
   UIManager,
-  SafeAreaView
+  SafeAreaView,
 } from "react-native";
-import * as Clipboard from 'expo-clipboard';
+import * as Clipboard from "expo-clipboard";
 
 import Suggestions from "../Suggestions/Suggestions";
 import Sidebar from "../Sidebar/Sidebar";
-import QAItem from './QAItem';
-import HeaderComponent from './HeaderComponent';
-import SearchInputBar from './SearchInputBar';
-import FeedbackModalComponent from './FeedbackModalComponent';
+import QAItem from "./QAItem";
+import HeaderComponent from "./HeaderComponent";
+import SearchInputBar from "./SearchInputBar";
+import FeedbackModalComponent from "./FeedbackModalComponent";
 
 // Custom Hooks
-import useAudioRecorder from '../../hooks/useAudioRecorder';
-import useChatHistory from '../../hooks/useChatHistory';
+import useAudioRecorder from "../../hooks/useAudioRecorder";
+import useChatHistory from "../../hooks/useChatHistory";
 
 // Services
-import { fetchChatResponse } from '../../services/ChatService';
+import { fetchChatResponse } from "../../services/ChatService";
 
 const SearchBar = () => {
   // State management for UI elements not covered by hooks
@@ -49,17 +49,20 @@ const SearchBar = () => {
   const micButtonScale = useRef(new Animated.Value(1)).current;
   const searchButtonScale = useRef(new Animated.Value(1)).current;
 
-  // Custom Hook for Chat History Management
+  // Remove all session/multi-session logic and restore to single chat session logic
+  // Remove all references to sessionHistory, chatSessions, selectedSessionId, handleSidebarHistoryItemClick, handleSidebarHistoryDelete, handleClearAllChats
+  // Use useChatHistory for qaHistory and searchHistory
   const {
-    qaHistory,
-    searchHistory,
-    newMessageId,
-    showPreviousHistory,
-    fadeAnims,
-    addQuestionToHistory,
-    updateHistoryWithAnswer,
-    updateHistoryWithError,
-    setSearchHistory: setSearchHistoryFromHook, // Renamed to avoid conflict
+    sessions,
+    selectedSessionId,
+    currentSession,
+    createSession,
+    selectSession,
+    addQuestionToSession,
+    updateSessionWithAnswer,
+    updateSessionWithError,
+    deleteSession,
+    clearAllSessions,
   } = useChatHistory(scrollToQuestion);
 
   // Custom Hook for Audio Recording
@@ -72,7 +75,7 @@ const SearchBar = () => {
     if (transcription) {
       setQuery(transcription); // Set transcribed text to input
     } else {
-      console.log('Transcription result was null or empty.');
+      console.log("Transcription result was null or empty.");
       // Optionally, provide feedback to the user if transcription is empty but not an error
     }
     setLoading(false); // Ensure general loading is also false
@@ -82,11 +85,11 @@ const SearchBar = () => {
   useEffect(() => {
     const previousStatus = previousRecordingStatusRef.current;
 
-    if (recordingStatus === 'stopped' && previousStatus === 'recording') {
+    if (recordingStatus === "stopped" && previousStatus === "recording") {
       // Recording has just stopped, now starting transcription process
       setIsTranscribing(true);
       setLoading(true); // Show general loading as transcription is an active process
-    } else if (recordingStatus === 'error' && isTranscribing) {
+    } else if (recordingStatus === "error" && isTranscribing) {
       // An error occurred while isTranscribing was true
       setIsTranscribing(false);
       setLoading(false);
@@ -98,7 +101,7 @@ const SearchBar = () => {
 
   // Enable LayoutAnimation on Android
   useEffect(() => {
-    if (Platform.OS === 'android') {
+    if (Platform.OS === "android") {
       if (UIManager.setLayoutAnimationEnabledExperimental) {
         UIManager.setLayoutAnimationEnabledExperimental(true);
       }
@@ -108,14 +111,14 @@ const SearchBar = () => {
   // Keyboard event listeners
   useEffect(() => {
     const keyboardWillShowListener = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
       (e) => {
         setKeyboardHeight(e.endCoordinates.height);
         setIsKeyboardVisible(true);
       }
     );
     const keyboardWillHideListener = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
       () => {
         setKeyboardHeight(0);
         setIsKeyboardVisible(false);
@@ -126,17 +129,17 @@ const SearchBar = () => {
       keyboardWillHideListener.remove();
     };
   }, []);
-  
+
   // Auto-scrolling when new answers arrive (simplified)
   useEffect(() => {
-    if (qaHistory.length > 0 && !loading && showPreviousHistory) {
-      const lastQuestionId = qaHistory[qaHistory.length - 1].id;
+    if (currentSession?.qaHistory?.length > 0 && !loading && showSuggestions) {
+      const lastQuestionId =
+        currentSession.qaHistory[currentSession.qaHistory.length - 1].id;
       if (lastQuestionId) {
-         // scrollToQuestion is called by useChatHistory after animation
+        // scrollToQuestion is called by useChatHistory after animation
       }
     }
-  }, [qaHistory, loading, showPreviousHistory]);
-
+  }, [currentSession?.qaHistory, loading, showSuggestions]);
 
   // Function to scroll to a specific question
   function scrollToQuestion(id) {
@@ -147,7 +150,7 @@ const SearchBar = () => {
           if (pageY > 0) {
             // Added check for pageY to prevent scrolling to 0,0 if measure fails initially
             // The offset (e.g., -100) can be adjusted based on header height or desired padding
-            const yOffset = pageY - (Platform.OS === 'ios' ? 60 : 85); // Adjust as needed
+            const yOffset = pageY - (Platform.OS === "ios" ? 60 : 85); // Adjust as needed
             scrollViewRef.current.scrollTo({
               y: Math.max(0, yOffset),
               animated: false, // Instant scroll
@@ -158,39 +161,58 @@ const SearchBar = () => {
     }, 150); // Slightly increased delay to ensure layout is complete
   }
 
-  const handleSearch = async (customQuery) => {
-    const searchQuery = (typeof customQuery === 'string' && customQuery.trim()) ? customQuery : query;
-    if (!searchQuery.trim()) return;
+  // Handler for new chat window (when app icon is clicked in sidebar)
+  const handleNewChatWindow = () => {
+    createSession();
+    setShowSuggestions(true);
+    setQuery("");
+    setIsSidebarOpen(false);
+  };
 
-    // Animate search button (if SearchInputBar doesn't handle this internally)
-    Animated.sequence([
-      Animated.timing(searchButtonScale, { toValue: 0.8, duration: 100, useNativeDriver: true }),
-      Animated.timing(searchButtonScale, { toValue: 1, duration: 100, useNativeDriver: true })
-    ]).start();
-    
-    // setShowInitialLanding(false); // This is now implicitly handled by qaHistory.length
-    setQuery(""); // Clear input after search
+  // Handler for selecting a session from sidebar
+  const handleSessionSelect = (sessionId) => {
+    selectSession(sessionId);
+    setShowSuggestions(false);
+    setIsSidebarOpen(false);
+  };
+
+  // Handler for deleting a session
+  const handleSessionDelete = (sessionId) => {
+    deleteSession(sessionId);
+  };
+
+  // Handler for clearing all sessions
+  const handleClearAllSessions = () => {
+    clearAllSessions();
+  };
+
+  // When user submits a new question, add to the selected session's history
+  const handleSearch = async (customQuery) => {
+    const searchQuery =
+      typeof customQuery === "string" && customQuery.trim()
+        ? customQuery
+        : query;
+    if (!searchQuery.trim()) return;
+    setQuery("");
     Keyboard.dismiss();
     setLoading(true);
-    setThinkingText("Thinking...");//thinking animation
-    setShowSuggestions(false); // Hide suggestions once search starts
-
-    const currentQaId = addQuestionToHistory(searchQuery);
-    
+    setThinkingText("Thinking...");
+    setShowSuggestions(false);
+    const qaId = Date.now().toString();
+    addQuestionToSession(searchQuery, qaId);
     try {
       const responseData = await fetchChatResponse(searchQuery);
-      if (responseData && responseData.answer) {
-        updateHistoryWithAnswer(currentQaId, responseData.answer, responseData.followup_questions || []);
-      } else {
-        // Handle cases where responseData is null or answer is missing
-        const errorMessage = responseData?.error || "Failed to get a valid response from the server.";
-        console.error("API response error or missing answer:", responseData);
-        updateHistoryWithError(currentQaId, errorMessage);
-      }
+      updateSessionWithAnswer(
+        qaId,
+        responseData?.answer ||
+          "Failed to get a valid response from the server.",
+        responseData?.followup_questions || []
+      );
     } catch (error) {
-      // This catch is for network errors or if fetchChatResponse throws
-      console.error("Fetch error in handleSearch:", error);
-      updateHistoryWithError(currentQaId, "Error fetching response. Please check your connection.");
+      updateSessionWithError(
+        qaId,
+        "Error fetching response. Please check your connection."
+      );
     } finally {
       setLoading(false);
       setThinkingText("");
@@ -202,106 +224,194 @@ const SearchBar = () => {
     handleSearch(suggestion); // Then perform search
   };
 
-  const handleCopy = async (text) => {
-    try {
-      await Clipboard.setStringAsync(text);
-      Alert.alert("Copied!", "Text copied to clipboard");
-    } catch (error) {
-      console.error("Copy failed:", error);
-      Alert.alert("Error", "Failed to copy text");
+  // Enable LayoutAnimation on Android
+  useEffect(() => {
+    if (Platform.OS === "android") {
+      if (UIManager.setLayoutAnimationEnabledExperimental) {
+        UIManager.setLayoutAnimationEnabledExperimental(true);
+      }
     }
-  };
-  
-  const handleSidebarHistoryItemClick = (historyItem) => {
-    setQuery(historyItem); // Set the history item to the search bar
-    handleSearch(historyItem); // Perform the search
-    setIsSidebarOpen(false); // Close sidebar
-  };
+  }, []);
 
+  // Keyboard event listeners
+  useEffect(() => {
+    const keyboardWillShowListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      (e) => {
+        setKeyboardHeight(e.endCoordinates.height);
+        setIsKeyboardVisible(true);
+      }
+    );
+    const keyboardWillHideListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      () => {
+        setKeyboardHeight(0);
+        setIsKeyboardVisible(false);
+      }
+    );
+    return () => {
+      keyboardWillShowListener.remove();
+      keyboardWillHideListener.remove();
+    };
+  }, []);
+
+  // Auto-scrolling when new answers arrive (simplified)
+  useEffect(() => {
+    if (currentSession?.qaHistory?.length > 0 && !loading && showSuggestions) {
+      const lastQuestionId =
+        currentSession.qaHistory[currentSession.qaHistory.length - 1].id;
+      if (lastQuestionId) {
+        // scrollToQuestion is called by useChatHistory after animation
+      }
+    }
+  }, [currentSession?.qaHistory, loading, showSuggestions]);
+
+  // Function to scroll to a specific question
+  function scrollToQuestion(id) {
+    setTimeout(() => {
+      const questionElement = questionRefs.current[id];
+      if (questionElement && scrollViewRef.current) {
+        questionElement.measure((x, y, width, height, pageX, pageY) => {
+          if (pageY > 0) {
+            // Added check for pageY to prevent scrolling to 0,0 if measure fails initially
+            // The offset (e.g., -100) can be adjusted based on header height or desired padding
+            const yOffset = pageY - (Platform.OS === "ios" ? 60 : 85); // Adjust as needed
+            scrollViewRef.current.scrollTo({
+              y: Math.max(0, yOffset),
+              animated: false, // Instant scroll
+            });
+          }
+        });
+      }
+    }, 150); // Slightly increased delay to ensure layout is complete
+  }
+
+  // Defensive: fallback UI for white screen or empty session
+  if (!currentSession) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.container}>
+          <HeaderComponent onMenuPress={() => setIsSidebarOpen(true)} />
+          <Sidebar
+            isVisible={isSidebarOpen}
+            onClose={() => setIsSidebarOpen(false)}
+            sessions={sessions}
+            selectedSessionId={selectedSessionId}
+            onSessionSelect={handleSessionSelect}
+            onNewSession={handleNewChatWindow}
+            onSessionDelete={handleSessionDelete}
+            onClearAllSessions={handleClearAllSessions}
+          />
+          <View
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          >
+            <Text>No chat session found. Please start a new chat.</Text>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>       
-         <HeaderComponent onMenuPress={() => {
-          console.log('Menu button pressed! Setting sidebar open to true');
-          console.log('Current isSidebarOpen state:', isSidebarOpen);
-          setIsSidebarOpen(true);
-          console.log('After setting, isSidebarOpen should be true');
-        }} />
-
-
-        <Sidebar 
+      <View style={styles.container}>
+        <HeaderComponent
+          onMenuPress={() => {
+            setIsSidebarOpen(true);
+          }}
+        />
+        <Sidebar
           isVisible={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
-          searchHistory={searchHistory} // from useChatHistory
-          onHistoryItemClick={handleSidebarHistoryItemClick} // Use the new handler
+          sessions={sessions}
+          selectedSessionId={selectedSessionId}
+          onSessionSelect={handleSessionSelect}
+          onNewSession={handleNewChatWindow}
+          onSessionDelete={handleSessionDelete}
+          onClearAllSessions={handleClearAllSessions}
         />
-
         <ScrollView
           ref={scrollViewRef}
           contentContainerStyle={[
             styles.scrollContent,
-            isKeyboardVisible && { paddingBottom: keyboardHeight + (Platform.OS === 'ios' ? 100 : 120) } // Adjusted padding
+            isKeyboardVisible && {
+              paddingBottom:
+                keyboardHeight + (Platform.OS === "ios" ? 100 : 120),
+            },
           ]}
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.chatContainer}>
-            {qaHistory.length === 0 && !loading ? ( // Show suggestions if history is empty and not loading
+            {/* Robust fallback for empty or loading state */}
+            {(!currentSession ||
+              !Array.isArray(currentSession.qaHistory) ||
+              currentSession.qaHistory.length === 0) &&
+            !loading ? (
               <Suggestions onSuggestionClick={handleSuggestionClick} />
             ) : (
               <View style={styles.historyContainer}>
-                {qaHistory.map((qa, index) => {
-                  // Logic to show only new message or all history based on showPreviousHistory
-                  if (!showPreviousHistory && qa.id !== newMessageId) {
-                    return null;
-                  }
-                  const isLastItem = index === qaHistory.length - 1;
-                  const isNewMessage = qa.id === newMessageId;
-                  // Separator logic might need adjustment based on when showPreviousHistory is true
-                  const showSeparator = !isLastItem && (showPreviousHistory || qa.answer !== "loading");
-
-                  return (
-                    <QAItem
-                      key={qa.id}
-                      qa={qa}
-                      isNewMessage={isNewMessage}
-                      thinkingText={isNewMessage && qa.answer === 'loading' ? thinkingText : ""}
-                      currentFadeAnim={fadeAnims.get(qa.id)}
-                      onCopy={handleCopy}
-                      onFollowupClick={handleSearch}
-                      questionRef={ref => {
-                        if (ref) questionRefs.current[qa.id] = ref;
-                      }}
-                      showSeparator={showSeparator}
-                    />
-                  );
-                })}
+                {(currentSession?.qaHistory || []).map((qa, index) => (
+                  <QAItem
+                    key={qa.id}
+                    qa={qa}
+                    isNewMessage={
+                      index === (currentSession?.qaHistory?.length || 0) - 1
+                    }
+                    thinkingText={
+                      index === (currentSession?.qaHistory?.length || 0) - 1 &&
+                      qa.answer === "loading"
+                        ? thinkingText
+                        : ""
+                    }
+                    currentFadeAnim={1}
+                    onCopy={async (text) => {
+                      try {
+                        await Clipboard.setStringAsync(text);
+                        Alert.alert("Copied!", "Text copied to clipboard");
+                      } catch (error) {
+                        Alert.alert("Error", "Failed to copy text");
+                      }
+                    }}
+                    onFollowupClick={handleSearch}
+                    questionRef={(ref) => {
+                      if (ref) questionRefs.current[qa.id] = ref;
+                    }}
+                    showSeparator={
+                      index !== (currentSession?.qaHistory?.length || 0) - 1
+                    }
+                  />
+                ))}
               </View>
             )}
           </View>
         </ScrollView>
-
         <SearchInputBar
           query={query}
           onQueryChange={setQuery}
           onSearchSubmit={handleSearch}
           onToggleRecording={() => {
-            // Animate mic button (optional, can be kept or removed if animation is tied to isListening/isTranscribing elsewhere)
             Animated.sequence([
-              Animated.timing(micButtonScale, { toValue: 0.8, duration: 100, useNativeDriver: true }),
-              Animated.timing(micButtonScale, { toValue: 1, duration: 100, useNativeDriver: true })
+              Animated.timing(micButtonScale, {
+                toValue: 0.8,
+                duration: 100,
+                useNativeDriver: true,
+              }),
+              Animated.timing(micButtonScale, {
+                toValue: 1,
+                duration: 100,
+                useNativeDriver: true,
+              }),
             ]).start();
-            toggleRecording(); // Simply call the hook's toggleRecording
-            // No direct setLoading or setIsTranscribing here; useEffect handles it based on recordingStatus
+            toggleRecording();
           }}
           isListening={isListening}
-          isTranscribing={isTranscribing} // Pass new state
+          isTranscribing={isTranscribing}
           micButtonScale={micButtonScale}
           searchButtonScale={searchButtonScale}
           isKeyboardVisible={isKeyboardVisible}
           keyboardHeight={keyboardHeight}
+          loading={loading}
         />
-
         <FeedbackModalComponent
           visible={showFeedbackPopup}
           onClose={() => setShowFeedbackPopup(false)}
@@ -329,7 +439,7 @@ const styles = StyleSheet.create({
   },
   chatContainer: {
     flex: 1,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 20, // Consistent padding
+    paddingBottom: Platform.OS === "ios" ? 20 : 20, // Consistent padding
   },
   historyContainer: {
     paddingHorizontal: 16, // Use horizontal padding for content alignment
