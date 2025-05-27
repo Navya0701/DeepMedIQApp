@@ -6,6 +6,7 @@ import {
   Image,
   Animated,
   StyleSheet,
+  Easing,
 } from "react-native";
 import FeedbackModalComponent from "./FeedbackModalComponent"; // Adjust the import based on your file structure
 import loadingGif2 from "../../assets/images/loadingimage-2.gif";
@@ -22,6 +23,22 @@ const QAItem = ({
   const [feedbackVisible, setFeedbackVisible] = useState(false);
   const [feedbackType, setFeedbackType] = useState(null);
 
+  // Best-of-best animation: springy, fade, scale, slide, shadow pop
+  const cardAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (qa.answer && qa.answer !== "loading") {
+      cardAnim.setValue(0);
+      Animated.spring(cardAnim, {
+        toValue: 1,
+        friction: 7,
+        tension: 60,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      cardAnim.setValue(0);
+    }
+  }, [qa.answer]);
+
   const handleLike = () => {
     setFeedbackType("like");
     setFeedbackVisible(true);
@@ -32,6 +49,7 @@ const QAItem = ({
   };
 
   // Format text: bold for **text** or (text), bullets for lines starting with *
+  // Enhanced formatText: if both ** and () are present in a line, only bold the outermost (first-appeared) one, leave inner as plain text
   const formatText = (text) => {
     if (!text) return null;
     const lines = text.split("\n");
@@ -50,23 +68,49 @@ const QAItem = ({
           </View>
         );
       }
-      // Bold for **text** or (text)
-      const bolded = line
-        .replace(/\*\*(.*?)\*\*/g, (m, p1) => `<b>${p1}</b>`)
-        .replace(/\(([^)]+)\)/g, (m, p1) => `<b>${p1}</b>`);
-      // Render bold tags
-      const parts = bolded.split(/(<b>.*?<\/b>)/g).filter(Boolean);
+      // Bold logic: only bold the outermost (first-appeared) of **...** or (...)
+      let out = [];
+      let i = 0;
+      while (i < line.length) {
+        if (line[i] === "*" && line[i + 1] === "*") {
+          // Found **
+          let end = line.indexOf("**", i + 2);
+          if (end !== -1) {
+            out.push(
+              <Text key={i} style={{ fontWeight: "bold", fontSize: 16 }}>
+                {line.substring(i + 2, end)}
+              </Text>
+            );
+            i = end + 2;
+            continue;
+          }
+        }
+        if (line[i] === "(") {
+          let end = line.indexOf(")", i + 1);
+          if (end !== -1) {
+            out.push(
+              <Text key={i} style={{ fontWeight: "bold", fontSize: 16 }}>
+                {line.substring(i + 1, end)}
+              </Text>
+            );
+            i = end + 1;
+            continue;
+          }
+        }
+        // Otherwise, just push the character
+        let nextSpecial = Math.min(
+          ...["**", "("].map((token) => {
+            let idx = line.indexOf(token, i);
+            return idx === -1 ? line.length : idx;
+          })
+        );
+        if (nextSpecial === i) nextSpecial = i + 1;
+        out.push(line.substring(i, nextSpecial));
+        i = nextSpecial;
+      }
       return (
         <Text key={idx} style={{ fontSize: 16 }}>
-          {parts.map((part, i) =>
-            part.startsWith("<b>") && part.endsWith("</b>") ? (
-              <Text key={i} style={{ fontWeight: "bold" }}>
-                {part.slice(3, -4)}
-              </Text>
-            ) : (
-              part
-            )
-          )}
+          {out}
         </Text>
       );
     });
@@ -103,7 +147,6 @@ const QAItem = ({
       <View ref={questionRef} style={styles.questionContainer}>
         <Text style={styles.questionText}>{qa.question}</Text>
       </View>
-
       {qa.answer === "loading" ? (
         <View style={styles.loadingContainer}>
           <Animated.Image
@@ -127,7 +170,41 @@ const QAItem = ({
           )}
         </View>
       ) : (
-        <Animated.View style={[styles.answerContainer, { opacity: 1 }]}>
+        <Animated.View
+          style={[
+            styles.answerContainer,
+            {
+              opacity: cardAnim,
+              transform: [
+                {
+                  scale: cardAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.92, 1],
+                  }),
+                },
+                {
+                  translateY: cardAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [48, 0],
+                  }),
+                },
+              ],
+              shadowOpacity: cardAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 0.18],
+              }),
+              shadowRadius: cardAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 12],
+              }),
+              shadowColor: "#1976D2",
+              elevation: cardAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 8],
+              }),
+            },
+          ]}
+        >
           <View style={styles.answerContent}>
             <View style={styles.answerRow}>
               <Image

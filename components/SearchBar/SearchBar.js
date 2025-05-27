@@ -44,6 +44,7 @@ const SearchBar = () => {
   const scrollViewRef = useRef(null);
   const questionRefs = useRef({});
   const previousRecordingStatusRef = useRef(); // Ref to store previous recording status
+  const abortControllerRef = useRef(null); // Add a ref to store the abort controller
 
   // Animation Values (passed to SearchInputBar)
   const micButtonScale = useRef(new Animated.Value(1)).current;
@@ -63,7 +64,7 @@ const SearchBar = () => {
     updateSessionWithError,
     deleteSession,
     clearAllSessions,
-  } = useChatHistory(scrollToQuestion);
+  } = useChatHistory();
 
   // Custom Hook for Audio Recording
   const {
@@ -130,62 +131,6 @@ const SearchBar = () => {
     };
   }, []);
 
-  // Auto-scrolling when new answers arrive (simplified)
-  useEffect(() => {
-    if (currentSession?.qaHistory?.length > 0 && !loading && showSuggestions) {
-      const lastQuestionId =
-        currentSession.qaHistory[currentSession.qaHistory.length - 1].id;
-      if (lastQuestionId) {
-        // scrollToQuestion is called by useChatHistory after animation
-      }
-    }
-  }, [currentSession?.qaHistory, loading, showSuggestions]);
-
-  // Function to scroll to a specific question
-  function scrollToQuestion(id) {
-    setTimeout(() => {
-      const questionElement = questionRefs.current[id];
-      if (questionElement && scrollViewRef.current) {
-        questionElement.measure((x, y, width, height, pageX, pageY) => {
-          if (pageY > 0) {
-            // Added check for pageY to prevent scrolling to 0,0 if measure fails initially
-            // The offset (e.g., -100) can be adjusted based on header height or desired padding
-            const yOffset = pageY - (Platform.OS === "ios" ? 60 : 85); // Adjust as needed
-            scrollViewRef.current.scrollTo({
-              y: Math.max(0, yOffset),
-              animated: false, // Instant scroll
-            });
-          }
-        });
-      }
-    }, 150); // Slightly increased delay to ensure layout is complete
-  }
-
-  // Handler for new chat window (when app icon is clicked in sidebar)
-  const handleNewChatWindow = () => {
-    createSession();
-    setShowSuggestions(true);
-    setQuery("");
-    setIsSidebarOpen(false);
-  };
-
-  // Handler for selecting a session from sidebar
-  const handleSessionSelect = (sessionId) => {
-    selectSession(sessionId);
-    setShowSuggestions(false);
-    setIsSidebarOpen(false);
-  };
-
-  // Handler for deleting a session
-  const handleSessionDelete = (sessionId) => {
-    deleteSession(sessionId);
-  };
-
-  // Handler for clearing all sessions
-  const handleClearAllSessions = () => {
-    clearAllSessions();
-  };
-
   // When user submits a new question, add to the selected session's history
   const handleSearch = async (customQuery) => {
     const searchQuery =
@@ -200,8 +145,23 @@ const SearchBar = () => {
     setShowSuggestions(false);
     const qaId = Date.now().toString();
     addQuestionToSession(searchQuery, qaId);
+    // Scroll to end as soon as input is given
+    setTimeout(() => {
+      if (scrollViewRef.current) {
+        scrollViewRef.current.scrollToEnd({ animated: true });
+      }
+    }, 100);
+    // Abort previous request if any
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
     try {
-      const responseData = await fetchChatResponse(searchQuery);
+      const responseData = await fetchChatResponse(
+        searchQuery,
+        controller.signal
+      );
       updateSessionWithAnswer(
         qaId,
         responseData?.answer ||
@@ -209,13 +169,25 @@ const SearchBar = () => {
         responseData?.followup_questions || []
       );
     } catch (error) {
-      updateSessionWithError(
-        qaId,
-        "Error fetching response. Please check your connection."
-      );
+      if (error.name === "AbortError") {
+        updateSessionWithError(qaId, "Response stopped by user.");
+      } else {
+        updateSessionWithError(
+          qaId,
+          "Error fetching response. Please check your connection."
+        );
+      }
     } finally {
       setLoading(false);
       setThinkingText("");
+      abortControllerRef.current = null;
+    }
+  };
+
+  // Add a stop handler
+  const handleStopResponse = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
     }
   };
 
@@ -223,6 +195,13 @@ const SearchBar = () => {
     setQuery(suggestion); // Set suggestion to query
     handleSearch(suggestion); // Then perform search
   };
+
+  // Automatically create a session if none exists
+  useEffect(() => {
+    if (!currentSession && sessions.length === 0) {
+      createSession();
+    }
+  }, [currentSession, sessions, createSession]);
 
   // Enable LayoutAnimation on Android
   useEffect(() => {
@@ -255,36 +234,30 @@ const SearchBar = () => {
     };
   }, []);
 
-  // Auto-scrolling when new answers arrive (simplified)
-  useEffect(() => {
-    if (currentSession?.qaHistory?.length > 0 && !loading && showSuggestions) {
-      const lastQuestionId =
-        currentSession.qaHistory[currentSession.qaHistory.length - 1].id;
-      if (lastQuestionId) {
-        // scrollToQuestion is called by useChatHistory after animation
-      }
-    }
-  }, [currentSession?.qaHistory, loading, showSuggestions]);
+  // Handler for new chat window (when app icon is clicked in sidebar)
+  const handleNewChatWindow = () => {
+    createSession();
+    setShowSuggestions(true);
+    setQuery("");
+    setIsSidebarOpen(false);
+  };
 
-  // Function to scroll to a specific question
-  function scrollToQuestion(id) {
-    setTimeout(() => {
-      const questionElement = questionRefs.current[id];
-      if (questionElement && scrollViewRef.current) {
-        questionElement.measure((x, y, width, height, pageX, pageY) => {
-          if (pageY > 0) {
-            // Added check for pageY to prevent scrolling to 0,0 if measure fails initially
-            // The offset (e.g., -100) can be adjusted based on header height or desired padding
-            const yOffset = pageY - (Platform.OS === "ios" ? 60 : 85); // Adjust as needed
-            scrollViewRef.current.scrollTo({
-              y: Math.max(0, yOffset),
-              animated: false, // Instant scroll
-            });
-          }
-        });
-      }
-    }, 150); // Slightly increased delay to ensure layout is complete
-  }
+  // Handler for selecting a session from sidebar
+  const handleSessionSelect = (sessionId) => {
+    selectSession(sessionId);
+    setShowSuggestions(false);
+    setIsSidebarOpen(false);
+  };
+
+  // Handler for deleting a session
+  const handleSessionDelete = (sessionId) => {
+    deleteSession(sessionId);
+  };
+
+  // Handler for clearing all sessions
+  const handleClearAllSessions = () => {
+    clearAllSessions();
+  };
 
   // Defensive: fallback UI for white screen or empty session
   if (!currentSession) {
@@ -389,6 +362,7 @@ const SearchBar = () => {
           query={query}
           onQueryChange={setQuery}
           onSearchSubmit={handleSearch}
+          onStopResponse={handleStopResponse}
           onToggleRecording={() => {
             Animated.sequence([
               Animated.timing(micButtonScale, {

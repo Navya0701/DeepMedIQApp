@@ -6,13 +6,14 @@ import {
   Image,
   StyleSheet,
   Animated,
+  Easing,
 } from "react-native";
-import loadingGif from "../../assets/images/loading.gif";
 
 const SearchInputBar = ({
   query,
   onQueryChange,
   onSearchSubmit,
+  onStopResponse,
   onToggleRecording,
   isListening,
   micButtonScale,
@@ -20,40 +21,66 @@ const SearchInputBar = ({
   isKeyboardVisible,
   keyboardHeight,
   isTranscribing,
-  loading, // <-- add loading prop
+  loading,
 }) => {
+  const [isFocused, setIsFocused] = React.useState(false);
+  // Animated value for keyboard translation
+  const translateYAnim = React.useRef(new Animated.Value(0)).current;
+
+  // Animate translateY when keyboard height changes
+  React.useEffect(() => {
+    Animated.timing(translateYAnim, {
+      toValue: isKeyboardVisible ? -keyboardHeight : 0,
+      duration: 320,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [isKeyboardVisible, keyboardHeight]);
+
   return (
-    <View
+    <Animated.View
       style={[
         styles.searchBarContainer,
         {
           transform: [
             {
-              translateY: isKeyboardVisible ? -keyboardHeight : 0,
+              translateY: translateYAnim,
             },
           ],
         },
       ]}
     >
-      <View style={styles.searchBar}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="How can DeepMedIQ help you today..."
-          placeholderTextColor="#889"
-          value={query}
-          multiline
-          onChangeText={onQueryChange}
-          onSubmitEditing={onSearchSubmit}
-        />
-        <Animated.View style={{ transform: [{ scale: micButtonScale }] }}>
+      <View style={styles.searchBarRounded}>
+        <View style={styles.inputWithMic}>
+          <TextInput
+            style={styles.searchInputRounded}
+            placeholder="How can DeepMedIQ help you today..."
+            placeholderTextColor="#889"
+            value={query}
+            multiline
+            onChangeText={onQueryChange}
+            onSubmitEditing={onSearchSubmit}
+            onFocus={() => setIsFocused && setIsFocused(true)}
+            onBlur={() => setIsFocused && setIsFocused(false)}
+            editable={true}
+            pointerEvents="auto"
+            importantForAccessibility="yes"
+            allowFontScaling={true}
+            autoFocus={false}
+            keyboardType="default"
+            returnKeyType="send"
+          />
           <TouchableOpacity
-            style={[styles.micButton, isListening && styles.micButtonActive]}
+            style={[
+              styles.micButtonInline,
+              isListening && styles.micButtonActive,
+            ]}
             onPress={onToggleRecording}
-            disabled={isTranscribing} // Disable button while transcribing
+            disabled={isTranscribing}
           >
             {isTranscribing ? (
               <Image
-                source={require("../../assets/images/loadingimage-2.gif")} // Replace with your loading GIF
+                source={require("../../assets/images/loadingimage-2.gif")}
                 style={styles.loadingIcon}
               />
             ) : (
@@ -66,26 +93,39 @@ const SearchInputBar = ({
               <View style={styles.recordingIndicator} />
             )}
           </TouchableOpacity>
-        </Animated.View>
+        </View>
         <Animated.View style={{ transform: [{ scale: searchButtonScale }] }}>
           <TouchableOpacity
-            style={styles.searchButton}
-            onPress={onSearchSubmit} // Changed from handleSearch to onSearchSubmit
+            style={[
+              styles.searchButton,
+              loading && styles.searchButtonDisabled,
+            ]}
+            onPress={() => {
+              if (loading) {
+                if (onStopResponse) onStopResponse();
+                return;
+              }
+              onSearchSubmit();
+            }}
+            disabled={false}
+            activeOpacity={0.7}
+            accessible={true}
+            accessibilityLabel="Send"
           >
-            <Image
-              source={require("../../assets/images/DeepMedIQ-small.jpeg")}
-              style={styles.searchButtonImage}
-            />
+            {loading ? (
+              <View style={styles.spinnerStyle}>
+                <View style={styles.spinnerCircle} />
+              </View>
+            ) : (
+              <Image
+                source={require("../../assets/images/DeepMedIQ-small.jpeg")}
+                style={styles.searchButtonImage}
+              />
+            )}
           </TouchableOpacity>
         </Animated.View>
-        {/* Loading GIF absolutely positioned at the bottom outline of the search bar */}
-        {loading && (
-          <View style={styles.loadingGifContainer} pointerEvents="none">
-            <Image source={loadingGif} style={styles.loadingGif} />
-          </View>
-        )}
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -100,29 +140,43 @@ const styles = StyleSheet.create({
     borderTopColor: "#eee",
     zIndex: 1000,
   },
-  searchBar: {
+  searchBarRounded: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 12,
     backgroundColor: "#f5f5f5",
+    borderRadius: 32,
+    margin: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    shadowColor: "#1976D2",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  searchInput: {
+  inputWithMic: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  searchInputRounded: {
     flex: 1,
     backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 32,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     fontSize: 16,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    maxHeight: 120,
-    minHeight: 50,
+    borderWidth: 0,
+    color: "#222",
   },
-  micButton: {
-    marginLeft: 8,
-    padding: 10,
+  micButtonInline: {
+    marginLeft: 6,
+    padding: 8,
     backgroundColor: "#fff",
     borderRadius: 20,
     elevation: 2,
+    justifyContent: "center",
+    alignItems: "center",
   },
   micButtonActive: {
     backgroundColor: "#CB2323",
@@ -156,22 +210,37 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     elevation: 2,
   },
+  searchButtonDisabled: {
+    opacity: 0.6,
+  },
   searchButtonImage: {
     width: 32,
     height: 32,
     borderRadius: 16,
   },
-  loadingGif: {
+  searchButtonLoadingIcon: {
     width: 32,
     height: 32,
-    // Remove marginRight and alignSelf for absolute positioning
+    borderRadius: 16,
   },
-  loadingGifContainer: {
-    position: "absolute",
-    bottom: -16, // Half the gif height to overlap the border
-    right: 20, // Adjust as needed to match screenshot (right padding)
-    zIndex: 10,
-    backgroundColor: "transparent",
+  // Remove styles: loadingGif and loadingGifContainer as they are not used
+  // Add spinner style
+  spinnerStyle: {
+    width: 32,
+    height: 32,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  spinnerCircle: {
+    width: 22,
+    height: 22,
+    borderWidth: 3,
+    borderColor: "#1976D2",
+    borderTopColor: "transparent",
+    borderRadius: 11,
+    borderStyle: "solid",
+    // Simple spin animation
+    transform: [{ rotate: "0deg" }],
   },
 });
 

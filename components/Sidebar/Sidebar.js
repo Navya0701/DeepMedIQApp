@@ -112,6 +112,17 @@ const Sidebar = ({
                       <Text style={styles.historyText} numberOfLines={2}>
                         {session.headline || "New Chat"}
                       </Text>
+                      <Text style={styles.timestampText}>
+                        {session.createdAt
+                          ? new Date(session.createdAt).toLocaleString([], {
+                              year: "2-digit",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : ""}
+                      </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => onSessionDelete(session.id)}
@@ -217,6 +228,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     flexWrap: "wrap",
+  },
+  timestampText: {
+    fontSize: 12,
+    color: "#bbb",
+    marginTop: 2,
   },
   emptyText: {
     fontStyle: "italic",
