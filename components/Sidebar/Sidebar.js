@@ -24,26 +24,12 @@ const Sidebar = ({
   onClose,
 }) => {
   const { width } = Dimensions.get("window");
-  const [expandedSessions, setExpandedSessions] = React.useState(new Set());
   
   // Animation and flicker-free rendering for sidebar
   const slideAnim = React.useRef(
     new Animated.Value(isVisible ? 0 : -width)
   ).current;
   const [shouldRender, setShouldRender] = React.useState(isVisible);
-
-  // Function to toggle session expansion
-  const toggleSessionExpansion = (sessionId) => {
-    setExpandedSessions(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(sessionId)) {
-        newSet.delete(sessionId);
-      } else {
-        newSet.add(sessionId);
-      }
-      return newSet;
-    });
-  };
 
   React.useEffect(() => {
     Animated.timing(slideAnim, {
@@ -113,7 +99,6 @@ const Sidebar = ({
               {sessions.length > 0 ? (
                 sessions.map((session, i) => (
                   <View key={session.id} style={styles.sessionContainer}>
-                    {/* Main Session Row */}
                     <View
                       style={[
                         styles.historyItem,
@@ -149,20 +134,6 @@ const Sidebar = ({
                         </View>
                       </TouchableOpacity>
                       
-                      {/* Expand/Collapse Button */}
-                      {session.qaHistory && session.qaHistory.length > 0 && (
-                        <TouchableOpacity
-                          onPress={() => toggleSessionExpansion(session.id)}
-                          style={styles.expandButton}
-                        >
-                          <MaterialIcons 
-                            name={expandedSessions.has(session.id) ? "expand-less" : "expand-more"} 
-                            size={20} 
-                            color="#fff" 
-                          />
-                        </TouchableOpacity>
-                      )}
-                      
                       <TouchableOpacity
                         onPress={() => onSessionDelete(session.id)}
                         style={styles.deleteIconContainer}
@@ -171,8 +142,7 @@ const Sidebar = ({
                       </TouchableOpacity>
                     </View>
                     
-                    {/* Questions List (shown when expanded) */}
-                    {expandedSessions.has(session.id) && session.qaHistory && session.qaHistory.length > 0 && (
+                    {session.qaHistory && session.qaHistory.length > 0 && (
                       <View style={styles.questionsContainer}>
                         {session.qaHistory.map((qa, qaIndex) => (
                           <TouchableOpacity
@@ -283,10 +253,6 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
-  },
-  expandButton: {
-    marginRight: 8,
-    padding: 4,
   },
   questionsContainer: {
     marginTop: 5,
