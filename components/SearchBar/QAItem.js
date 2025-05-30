@@ -47,13 +47,20 @@ const QAItem = ({
     setFeedbackType("dislike");
     setFeedbackVisible(true);
   };
-
   // Format text: bold for **text** or (text), bullets for lines starting with *
   // Enhanced formatText: if both ** and () are present in a line, only bold the outermost (first-appeared) one, leave inner as plain text
   const formatText = (text) => {
     if (!text) return null;
     const lines = text.split("\n");
     return lines.map((line, idx) => {
+      // Header if line starts with ###
+      if (line.trim().startsWith("###")) {
+        return (
+          <Text key={idx} style={{ fontSize: 22, fontWeight: "600", color: "#333", marginVertical: 8 }}>
+            {line.replace(/^\s*###\s*/, "")}
+          </Text>
+        );
+      }
       // Bullet point if line starts with *
       if (line.trim().startsWith("*")) {
         return (
@@ -80,8 +87,7 @@ const QAItem = ({
               <Text key={i} style={{ fontWeight: "bold", fontSize: 16 }}>
                 {line.substring(i + 2, end)}
               </Text>
-            );
-            i = end + 2;
+            );            i = end + 2;
             continue;
           }
         }
@@ -89,7 +95,7 @@ const QAItem = ({
           let end = line.indexOf(")", i + 1);
           if (end !== -1) {
             out.push(
-              <Text key={i} style={{ fontWeight: "bold", fontSize: 16 }}>
+              <Text key={i} style={{ fontSize: 16 }}>
                 {line.substring(i + 1, end)}
               </Text>
             );
@@ -97,7 +103,7 @@ const QAItem = ({
             continue;
           }
         }
-        // Otherwise, just push the character
+        // Otherwise, just push the character wrapped in Text component
         let nextSpecial = Math.min(
           ...["**", "("].map((token) => {
             let idx = line.indexOf(token, i);
@@ -105,13 +111,19 @@ const QAItem = ({
           })
         );
         if (nextSpecial === i) nextSpecial = i + 1;
-        out.push(line.substring(i, nextSpecial));
-        i = nextSpecial;
-      }
+        const textSegment = line.substring(i, nextSpecial);
+        if (textSegment) {
+          out.push(
+            <Text key={`text-${i}`} style={{ fontSize: 16 }}>
+              {textSegment}
+            </Text>
+          );
+        }        i = nextSpecial;      }
+      
       return (
-        <Text key={idx} style={{ fontSize: 16 }}>
+        <View key={idx} style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           {out}
-        </Text>
+        </View>
       );
     });
   };
@@ -288,7 +300,6 @@ const styles = StyleSheet.create({
   },
   questionText: {
     fontSize: 16,
-    fontWeight: "bold",
     color: "#333",
   },
   loadingContainer: {

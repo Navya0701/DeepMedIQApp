@@ -24,16 +24,31 @@ const Sidebar = ({
   onClose,
 }) => {
   const { width } = Dimensions.get("window");
+  const [expandedSessions, setExpandedSessions] = React.useState(new Set());
+  
   // Animation and flicker-free rendering for sidebar
   const slideAnim = React.useRef(
     new Animated.Value(isVisible ? 0 : -width)
   ).current;
   const [shouldRender, setShouldRender] = React.useState(isVisible);
 
+  // Function to toggle session expansion
+  const toggleSessionExpansion = (sessionId) => {
+    setExpandedSessions(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sessionId)) {
+        newSet.delete(sessionId);
+      } else {
+        newSet.add(sessionId);
+      }
+      return newSet;
+    });
+  };
+
   React.useEffect(() => {
     Animated.timing(slideAnim, {
       toValue: isVisible ? 0 : -width,
-      duration: 220, // Smoother and a bit faster
+      duration: 220,
       useNativeDriver: true,
       easing: Easing.inOut(Easing.cubic),
     }).start();
@@ -46,6 +61,7 @@ const Sidebar = ({
       return () => clearTimeout(timeout);
     }
   }, [isVisible]);
+  
   if (!shouldRender) return null;
 
   return (
@@ -96,44 +112,87 @@ const Sidebar = ({
             <ScrollView style={styles.historyScroll}>
               {sessions.length > 0 ? (
                 sessions.map((session, i) => (
-                  <View
-                    key={session.id}
-                    style={[
-                      styles.historyItem,
-                      session.id === selectedSessionId && {
-                        backgroundColor: "#1976D2",
-                      },
-                    ]}
-                  >
-                    <TouchableOpacity
-                      style={styles.textContainer}
-                      onPress={() => onSessionSelect(session.id)}
+                  <View key={session.id} style={styles.sessionContainer}>
+                    {/* Main Session Row */}
+                    <View
+                      style={[
+                        styles.historyItem,
+                        session.id === selectedSessionId && {
+                          backgroundColor: "#1976D2",
+                        },
+                      ]}
                     >
-                      <Text style={styles.historyText} numberOfLines={2}>
-                        {session.headline || "New Chat"}
-                      </Text>
-                      <Text style={styles.timestampText}>
-                        {session.createdAt
-                          ? new Date(session.createdAt).toLocaleString([], {
-                              year: "2-digit",
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : ""}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => onSessionDelete(session.id)}
-                      style={styles.deleteIconContainer}
-                    >
-                      <MaterialIcons name="delete" size={22} color="#ff6666" />
-                    </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.textContainer}
+                        onPress={() => onSessionSelect(session.id)}
+                      >
+                        <Text style={styles.historyText} numberOfLines={2}>
+                          {session.headline || "New Chat"}
+                        </Text>
+                        <View style={styles.sessionInfoRow}>
+                          <Text style={styles.timestampText}>
+                            {session.createdAt
+                              ? new Date(session.createdAt).toLocaleString([], {
+                                  year: "2-digit",
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })
+                              : ""}
+                          </Text>
+                          {session.qaHistory && session.qaHistory.length > 0 && (
+                            <Text style={styles.questionCountText}>
+                              {session.qaHistory.length} question{session.qaHistory.length !== 1 ? 's' : ''}
+                            </Text>
+                          )}
+                        </View>
+                      </TouchableOpacity>
+                      
+                      {/* Expand/Collapse Button */}
+                      {session.qaHistory && session.qaHistory.length > 0 && (
+                        <TouchableOpacity
+                          onPress={() => toggleSessionExpansion(session.id)}
+                          style={styles.expandButton}
+                        >
+                          <MaterialIcons 
+                            name={expandedSessions.has(session.id) ? "expand-less" : "expand-more"} 
+                            size={20} 
+                            color="#fff" 
+                          />
+                        </TouchableOpacity>
+                      )}
+                      
+                      <TouchableOpacity
+                        onPress={() => onSessionDelete(session.id)}
+                        style={styles.deleteIconContainer}
+                      >
+                        <MaterialIcons name="delete" size={22} color="#ff6666" />
+                      </TouchableOpacity>
+                    </View>
+                    
+                    {/* Questions List (shown when expanded) */}
+                    {expandedSessions.has(session.id) && session.qaHistory && session.qaHistory.length > 0 && (
+                      <View style={styles.questionsContainer}>
+                        {session.qaHistory.map((qa, qaIndex) => (
+                          <TouchableOpacity
+                            key={qa.id || qaIndex}
+                            style={styles.questionItem}
+                            onPress={() => onSessionSelect(session.id)}
+                          >
+                            <Text style={styles.questionText} numberOfLines={3}>
+                              {qa.question}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
                   </View>
                 ))
               ) : (
-                <Text style={styles.emptyText}>No sessions yet</Text>
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>No sessions yet</Text>
+                </View>
               )}
             </ScrollView>
           </View>
@@ -207,10 +266,12 @@ const styles = StyleSheet.create({
   historyScroll: {
     flex: 1,
   },
+  sessionContainer: {
+    marginBottom: 10,
+  },
   historyItem: {
     backgroundColor: "#333",
     borderRadius: 8,
-    marginBottom: 10,
     padding: 10,
     flexDirection: "row",
     alignItems: "center",
@@ -223,22 +284,58 @@ const styles = StyleSheet.create({
   textContainer: {
     flex: 1,
   },
+  expandButton: {
+    marginRight: 8,
+    padding: 4,
+  },
+  questionsContainer: {
+    marginTop: 5,
+    marginLeft: 15,
+    paddingLeft: 10,
+    borderLeftWidth: 2,
+    borderLeftColor: "#555",
+  },
+  questionItem: {
+    backgroundColor: "#444",
+    borderRadius: 6,
+    padding: 8,
+    marginBottom: 5,
+  },
+  questionText: {
+    fontSize: 14,
+    color: "#ccc",
+    lineHeight: 18,
+  },
   historyText: {
     fontSize: 16,
     color: "#fff",
     fontWeight: "bold",
     flexWrap: "wrap",
   },
+  sessionInfoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 2,
+  },
   timestampText: {
     fontSize: 12,
     color: "#bbb",
-    marginTop: 2,
+  },
+  questionCountText: {
+    fontSize: 11,
+    color: "#888",
+    fontStyle: "italic",
+  },
+  emptyContainer: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   emptyText: {
     fontStyle: "italic",
     color: "#aaa",
     textAlign: "center",
-    marginTop: 20,
     fontSize: 16,
   },
   deleteIconContainer: {
