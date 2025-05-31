@@ -9,31 +9,24 @@ import {
   ActivityIndicator,
   Easing,
 } from "react-native";
-import { Ionicons } from '@expo/vector-icons';
 
 const SearchInputBar = ({
-  // related to the search input
   query,
   onQueryChange,
-  // these are related toto the keyboard and its visibility
   searchButtonScale,
   isKeyboardVisible,
   keyboardHeight,
-  // these below 3 are are for the submit button and the response related
   loading,
   onSearchSubmit,
   onStopResponse,
-  // these below 3 are the important props for recording
   startRecording,
   stopRecording,
   recording,
   isTranscribing
 }) => {
   const [isFocused, setIsFocused] = React.useState(false);
-  // Animated value for keyboard translation
   const translateYAnim = React.useRef(new Animated.Value(0)).current;
 
-  // Animate translateY when keyboard height changes
   React.useEffect(() => {
     Animated.timing(translateYAnim, {
       toValue: isKeyboardVisible ? -keyboardHeight : 0,
@@ -47,13 +40,7 @@ const SearchInputBar = ({
     <Animated.View
       style={[
         styles.searchBarContainer,
-        {
-          transform: [
-            {
-              translateY: translateYAnim,
-            },
-          ],
-        },
+        { transform: [{ translateY: translateYAnim }] },
       ]}
     >
       <View style={styles.searchBarRounded}>
@@ -66,20 +53,20 @@ const SearchInputBar = ({
             multiline
             onChangeText={onQueryChange}
             onSubmitEditing={onSearchSubmit}
-            onFocus={() => setIsFocused && setIsFocused(true)}
-            onBlur={() => setIsFocused && setIsFocused(false)}
-            editable={true}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            editable
             pointerEvents="auto"
             importantForAccessibility="yes"
-            allowFontScaling={true}
+            allowFontScaling
             autoFocus={false}
             keyboardType="default"
             returnKeyType="send"
           />
-           <TouchableOpacity
+          <TouchableOpacity
             onPress={recording ? stopRecording : (!isTranscribing ? startRecording : undefined)}
             style={{
-              backgroundColor: recording ? 'white' : 'white',
+              backgroundColor: 'white',
               padding: 15,
               marginLeft: 10,
               borderRadius: 50,
@@ -100,7 +87,7 @@ const SearchInputBar = ({
           </TouchableOpacity>
         </View>
         <Animated.View style={{ transform: [{ scale: searchButtonScale }] }}>
-           <TouchableOpacity
+          <TouchableOpacity
             style={[
               styles.searchButton,
               loading && styles.searchButtonDisabled,
@@ -114,7 +101,7 @@ const SearchInputBar = ({
             }}
             disabled={false}
             activeOpacity={0.7}
-            accessible={true}
+            accessible
             accessibilityLabel="Send"
           >
             {loading ? (
@@ -174,40 +161,6 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     color: "#222",
   },
-  micButtonInline: {
-    marginLeft: 6,
-    padding: 8,
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    elevation: 2,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  micButtonActive: {
-    backgroundColor: "#CB2323",
-  },
-  micIcon: {
-    width: 24,
-    height: 24,
-    tintColor: "#333",
-  },
-  loadingIcon: {
-    // Style for the loading GIF
-    width: 24,
-    height: 24,
-  },
-  micIconActive: {
-    tintColor: "#fff",
-  },
-  recordingIndicator: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "red",
-  },
   searchButton: {
     marginLeft: 12,
     padding: 8,
@@ -223,13 +176,6 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
   },
-  searchButtonLoadingIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-  },
-  // Remove styles: loadingGif and loadingGifContainer as they are not used
-  // Add spinner style
   spinnerStyle: {
     width: 32,
     height: 32,
@@ -244,7 +190,6 @@ const styles = StyleSheet.create({
     borderTopColor: "transparent",
     borderRadius: 11,
     borderStyle: "solid",
-    // Simple spin animation
     transform: [{ rotate: "0deg" }],
   },
 });

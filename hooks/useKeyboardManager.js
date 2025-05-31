@@ -6,20 +6,17 @@ export default function useKeyboardManager() {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
   useEffect(() => {
-    // Enable LayoutAnimation on Android
-    if (Platform.OS === 'android') {
-      if (UIManager.setLayoutAnimationEnabledExperimental) {
-        UIManager.setLayoutAnimationEnabledExperimental(true);
-      }
+    if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+      UIManager.setLayoutAnimationEnabledExperimental(true);
     }
-    const keyboardWillShowListener = Keyboard.addListener(
+    const showListener = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-      (e) => {
+      e => {
         setKeyboardHeight(e.endCoordinates.height);
         setIsKeyboardVisible(true);
       }
     );
-    const keyboardWillHideListener = Keyboard.addListener(
+    const hideListener = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
       () => {
         setKeyboardHeight(0);
@@ -27,8 +24,8 @@ export default function useKeyboardManager() {
       }
     );
     return () => {
-      keyboardWillShowListener.remove();
-      keyboardWillHideListener.remove();
+      showListener.remove();
+      hideListener.remove();
     };
   }, []);
 
