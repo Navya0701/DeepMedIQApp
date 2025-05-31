@@ -8,7 +8,6 @@ import {
   Keyboard,
   Alert,
   Animated,
-  LayoutAnimation,
   UIManager,
   SafeAreaView,
 } from "react-native";
@@ -21,12 +20,14 @@ import HeaderComponent from "./HeaderComponent";
 import SearchInputBar from "./SearchInputBar";
 import FeedbackModalComponent from "./FeedbackModalComponent";
 
+import { Audio } from 'expo-av';
+
 // Custom Hooks
-import useAudioRecorder from "../../hooks/useAudioRecorder";
 import useChatHistory from "../../hooks/useChatHistory";
 
 // Services
 import { fetchChatResponse } from "../../services/ChatService";
+import { transcribeAudio } from "../../services/TranscriptionService";
 
 const SearchBar = () => {
   // State management for UI elements not covered by hooks
@@ -34,25 +35,27 @@ const SearchBar = () => {
   const [query, setQuery] = useState(""); // Current text in input bar
   const [showSuggestions, setShowSuggestions] = useState(true); // Initially show suggestions
   const [loading, setLoading] = useState(false); // For overall loading state, e.g., during API calls
+  
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [thinkingText, setThinkingText] = useState(""); // Moved from useChatHistory for direct control if needed by UI
+  
+  // these are the only guys required for the recording and transcription logic
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [recording, setRecording] = useState(null);
 
   // Refs
   const scrollViewRef = useRef(null);
   const questionRefs = useRef({});
-  const previousRecordingStatusRef = useRef(); // Ref to store previous recording status
+   const previousRecordingStatusRef = useRef(); // Ref to store previous recording status
   const abortControllerRef = useRef(null); // Add a ref to store the abort controller
 
   // Animation Values (passed to SearchInputBar)
   const micButtonScale = useRef(new Animated.Value(1)).current;
   const searchButtonScale = useRef(new Animated.Value(1)).current;
 
-  // Remove all session/multi-session logic and restore to single chat session logic
-  // Remove all references to sessionHistory, chatSessions, selectedSessionId, handleSidebarHistoryItemClick, handleSidebarHistoryDelete, handleClearAllChats
-  // Use useChatHistory for qaHistory and searchHistory
+
   const {
     sessions,
     selectedSessionId,
@@ -66,39 +69,63 @@ const SearchBar = () => {
     clearAllSessions,
   } = useChatHistory();
 
-  // Custom Hook for Audio Recording
-  const {
-    isListening,
-    toggleRecording,
-    recordingStatus, // Destructure recordingStatus
-  } = useAudioRecorder((transcription) => {
-    setIsTranscribing(false); // Transcription complete or failed softly, hide loader
-    if (transcription) {
-      setQuery(transcription); // Set transcribed text to input
-    } else {
-      console.log("Transcription result was null or empty.");
-      // Optionally, provide feedback to the user if transcription is empty but not an error
+
+  async function startRecording() {
+    try {
+      const permission = await Audio.requestPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('Permission not granted');
+        return;
+      }
+
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+
+      const { recording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+      setRecording(recording);
+      console.log('Recording started');
+    } catch (err) {
+      console.error('Failed to start recording', err);
     }
-    setLoading(false); // Ensure general loading is also false
-  });
+  }
+
+  async function stopRecording() {
+    if (!recording) return;
+
+    try {
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      console.log('Recording stored at', uri);
+      setQuery(await transcribeAudio(uri)); // Transcribe the audio and set it to query
+    
+    } catch (e) {
+      console.error('Error stopping recording:', e);
+    }
+
+    setRecording(null);
+  }
 
   // Effect to manage isTranscribing based on recordingStatus
   useEffect(() => {
     const previousStatus = previousRecordingStatusRef.current;
 
-    if (recordingStatus === "stopped" && previousStatus === "recording") {
+    if (recording === "stopped" && previousStatus === "recording") {
       // Recording has just stopped, now starting transcription process
       setIsTranscribing(true);
       setLoading(true); // Show general loading as transcription is an active process
-    } else if (recordingStatus === "error" && isTranscribing) {
+    } else if (recording === "error" && isTranscribing) {
       // An error occurred while isTranscribing was true
       setIsTranscribing(false);
       setLoading(false);
     }
 
     // Update the ref *after* using its previous value
-    previousRecordingStatusRef.current = recordingStatus;
-  }, [recordingStatus, isTranscribing]); // Added isTranscribing to dependency for the error check
+    // previousRecordingStatusRef.current = recordingStatus;
+  }, [recording, isTranscribing]); // Added isTranscribing to dependency for the error check
 
   // Enable LayoutAnimation on Android
   useEffect(() => {
@@ -361,30 +388,19 @@ const SearchBar = () => {
         <SearchInputBar
           query={query}
           onQueryChange={setQuery}
-          onSearchSubmit={handleSearch}
-          onStopResponse={handleStopResponse}
-          onToggleRecording={() => {
-            Animated.sequence([
-              Animated.timing(micButtonScale, {
-                toValue: 0.8,
-                duration: 100,
-                useNativeDriver: true,
-              }),
-              Animated.timing(micButtonScale, {
-                toValue: 1,
-                duration: 100,
-                useNativeDriver: true,
-              }),
-            ]).start();
-            toggleRecording();
-          }}
-          isListening={isListening}
-          isTranscribing={isTranscribing}
-          micButtonScale={micButtonScale}
+         
           searchButtonScale={searchButtonScale}
           isKeyboardVisible={isKeyboardVisible}
           keyboardHeight={keyboardHeight}
+
           loading={loading}
+          onSearchSubmit={handleSearch}
+          onStopResponse={handleStopResponse}
+
+          stopRecording={stopRecording}
+          startRecording={startRecording}
+          recording={recording}
+          isTranscribing={isTranscribing}
         />
         <FeedbackModalComponent
           visible={showFeedbackPopup}

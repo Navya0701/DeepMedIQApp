@@ -6,22 +6,28 @@ import {
   Image,
   StyleSheet,
   Animated,
+  ActivityIndicator,
   Easing,
 } from "react-native";
+import { Ionicons } from '@expo/vector-icons';
 
 const SearchInputBar = ({
+  // related to the search input
   query,
   onQueryChange,
-  onSearchSubmit,
-  onStopResponse,
-  onToggleRecording,
-  isListening,
-  micButtonScale,
+  // these are related toto the keyboard and its visibility
   searchButtonScale,
   isKeyboardVisible,
   keyboardHeight,
-  isTranscribing,
+  // these below 3 are are for the submit button and the response related
   loading,
+  onSearchSubmit,
+  onStopResponse,
+  // these below 3 are the important props for recording
+  startRecording,
+  stopRecording,
+  recording,
+  isTranscribing
 }) => {
   const [isFocused, setIsFocused] = React.useState(false);
   // Animated value for keyboard translation
@@ -70,32 +76,22 @@ const SearchInputBar = ({
             keyboardType="default"
             returnKeyType="send"
           />
-          <TouchableOpacity
-            style={[
-              styles.micButtonInline,
-              isListening && styles.micButtonActive,
-            ]}
-            onPress={onToggleRecording}
-            disabled={isTranscribing}
-          >
-            {isTranscribing ? (
-              <Image
-                source={require("../../assets/images/loadingimage-2.gif")}
-                style={styles.loadingIcon}
-              />
-            ) : (
-              <Image
-                source={require("../../assets/images/mic.png")}
-                style={[styles.micIcon, isListening && styles.micIconActive]}
-              />
-            )}
-            {isListening && !isTranscribing && (
-              <View style={styles.recordingIndicator} />
-            )}
+           <TouchableOpacity
+              onPress={recording ? stopRecording : startRecording}
+              style={{
+                backgroundColor: recording ? 'white' : 'white',
+                padding: 20,
+                borderRadius: 50,
+              }}>
+               {!recording ? (
+                <Image source={require("../../assets/images/mic.png")}  />
+              ) : (
+                <Image source={require("../../assets/images/stop.png")}  />
+              )}
           </TouchableOpacity>
         </View>
         <Animated.View style={{ transform: [{ scale: searchButtonScale }] }}>
-          <TouchableOpacity
+           <TouchableOpacity
             style={[
               styles.searchButton,
               loading && styles.searchButtonDisabled,

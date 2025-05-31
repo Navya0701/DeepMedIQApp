@@ -39,7 +39,6 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-audio",
       "expo-build-properties"
     ],
     "experiments": {

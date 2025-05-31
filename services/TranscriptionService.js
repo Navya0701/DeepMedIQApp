@@ -5,6 +5,7 @@ import { Alert } from 'react-native';
 const DEEPGRAM_API_KEY = Constants.expoConfig?.extra?.DEEPGRAM_API_KEY;
 
 export const transcribeAudio = async (audioUri) => {
+  console.log('Transcribing audio from URI:', audioUri);
   if (!DEEPGRAM_API_KEY) {
     Alert.alert('Error', 'Deepgram API Key is missing.');
     console.error('Deepgram API Key is missing');
