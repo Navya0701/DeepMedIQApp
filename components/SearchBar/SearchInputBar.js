@@ -77,18 +77,26 @@ const SearchInputBar = ({
             returnKeyType="send"
           />
            <TouchableOpacity
-              onPress={recording ? stopRecording : startRecording}
-              style={{
-                backgroundColor: recording ? 'white' : 'white',
-                padding: 15,
-                marginLeft: 10,
-                borderRadius: 50,
-              }}>
-               {!recording ? (
-                <Image source={require("../../assets/images/mic.png")} style={{ width: 20, height: 20 }} />
-              ) : (
-                <Image source={require("../../assets/images/stop.png")} style={{ width: 20, height: 20 }} />
-              )}
+            onPress={recording ? stopRecording : (!isTranscribing ? startRecording : undefined)}
+            style={{
+              backgroundColor: recording ? 'white' : 'white',
+              padding: 15,
+              marginLeft: 10,
+              borderRadius: 50,
+              alignItems: 'center',
+              justifyContent: 'center',
+              minWidth: 50,
+              minHeight: 50,
+            }}
+            disabled={isTranscribing}
+          >
+            {isTranscribing ? (
+              <ActivityIndicator size="small" color="#1976D2" />
+            ) : !recording ? (
+              <Image source={require("../../assets/images/mic.png")} style={{ width: 20, height: 20 }} />
+            ) : (
+              <Image source={require("../../assets/images/stop.png")} style={{ width: 20, height: 20 }} />
+            )}
           </TouchableOpacity>
         </View>
         <Animated.View style={{ transform: [{ scale: searchButtonScale }] }}>

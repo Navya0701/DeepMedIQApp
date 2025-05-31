@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, use } from "react";
 import {
   Platform,
   View,
@@ -20,14 +20,13 @@ import HeaderComponent from "./HeaderComponent";
 import SearchInputBar from "./SearchInputBar";
 import FeedbackModalComponent from "./FeedbackModalComponent";
 
-import { Audio } from 'expo-av';
-
 // Custom Hooks
 import useChatHistory from "../../hooks/useChatHistory";
+import useAudioRecorder from '../../hooks/useAudioRecorder';
+import useKeyboardManager from '../../hooks/useKeyboardManager';
 
 // Services
 import { fetchChatResponse } from "../../services/ChatService";
-import { transcribeAudio } from "../../services/TranscriptionService";
 
 const SearchBar = () => {
   // State management for UI elements not covered by hooks
@@ -37,13 +36,16 @@ const SearchBar = () => {
   const [loading, setLoading] = useState(false); // For overall loading state, e.g., during API calls
   
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [thinkingText, setThinkingText] = useState(""); // Moved from useChatHistory for direct control if needed by UI
   
-  // these are the only guys required for the recording and transcription logic
-  const [isTranscribing, setIsTranscribing] = useState(false);
-  const [recording, setRecording] = useState(null);
+  // Use the custom hook
+  const {
+    recording,
+    isTranscribing,
+    startRecording,
+    stopRecording,
+    transcript
+  } = useAudioRecorder();
 
   // Refs
   const scrollViewRef = useRef(null);
@@ -54,7 +56,6 @@ const SearchBar = () => {
   // Animation Values (passed to SearchInputBar)
   const micButtonScale = useRef(new Animated.Value(1)).current;
   const searchButtonScale = useRef(new Animated.Value(1)).current;
-
 
   const {
     sessions,
@@ -69,45 +70,14 @@ const SearchBar = () => {
     clearAllSessions,
   } = useChatHistory();
 
+  // Keyboard manager hook provides keyboardHeight and isKeyboardVisible
+  const { keyboardHeight, isKeyboardVisible } = useKeyboardManager();
 
-  async function startRecording() {
-    try {
-      const permission = await Audio.requestPermissionsAsync();
-      if (!permission.granted) {
-        Alert.alert('Permission not granted');
-        return;
-      }
-
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      });
-
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
-      setRecording(recording);
-      console.log('Recording started');
-    } catch (err) {
-      console.error('Failed to start recording', err);
+  useEffect(() => {
+    if(transcript!==''){
+      setQuery(transcript) // Update query with the latest transcript
     }
-  }
-
-  async function stopRecording() {
-    if (!recording) return;
-
-    try {
-      await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
-      console.log('Recording stored at', uri);
-      setQuery(await transcribeAudio(uri)); // Transcribe the audio and set it to query
-    
-    } catch (e) {
-      console.error('Error stopping recording:', e);
-    }
-
-    setRecording(null);
-  }
+  }, [transcript]);
 
   // Effect to manage isTranscribing based on recordingStatus
   useEffect(() => {
@@ -134,28 +104,6 @@ const SearchBar = () => {
         UIManager.setLayoutAnimationEnabledExperimental(true);
       }
     }
-  }, []);
-
-  // Keyboard event listeners
-  useEffect(() => {
-    const keyboardWillShowListener = Keyboard.addListener(
-      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
-      (e) => {
-        setKeyboardHeight(e.endCoordinates.height);
-        setIsKeyboardVisible(true);
-      }
-    );
-    const keyboardWillHideListener = Keyboard.addListener(
-      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
-      () => {
-        setKeyboardHeight(0);
-        setIsKeyboardVisible(false);
-      }
-    );
-    return () => {
-      keyboardWillShowListener.remove();
-      keyboardWillHideListener.remove();
-    };
   }, []);
 
   // When user submits a new question, add to the selected session's history
@@ -230,37 +178,6 @@ const SearchBar = () => {
     }
   }, [currentSession, sessions, createSession]);
 
-  // Enable LayoutAnimation on Android
-  useEffect(() => {
-    if (Platform.OS === "android") {
-      if (UIManager.setLayoutAnimationEnabledExperimental) {
-        UIManager.setLayoutAnimationEnabledExperimental(true);
-      }
-    }
-  }, []);
-
-  // Keyboard event listeners
-  useEffect(() => {
-    const keyboardWillShowListener = Keyboard.addListener(
-      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
-      (e) => {
-        setKeyboardHeight(e.endCoordinates.height);
-        setIsKeyboardVisible(true);
-      }
-    );
-    const keyboardWillHideListener = Keyboard.addListener(
-      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
-      () => {
-        setKeyboardHeight(0);
-        setIsKeyboardVisible(false);
-      }
-    );
-    return () => {
-      keyboardWillShowListener.remove();
-      keyboardWillHideListener.remove();
-    };
-  }, []);
-
   // Handler for new chat window (when app icon is clicked in sidebar)
   const handleNewChatWindow = () => {
     createSession();
@@ -276,12 +193,12 @@ const SearchBar = () => {
     setIsSidebarOpen(false);
   };
 
-  // Handler for deleting a session
+  // Handler for deleting a session from sidebar
   const handleSessionDelete = (sessionId) => {
     deleteSession(sessionId);
   };
 
-  // Handler for clearing all sessions
+  // Handler for clearing all sessions from sidebar
   const handleClearAllSessions = () => {
     clearAllSessions();
   };
@@ -388,15 +305,12 @@ const SearchBar = () => {
         <SearchInputBar
           query={query}
           onQueryChange={setQuery}
-         
           searchButtonScale={searchButtonScale}
           isKeyboardVisible={isKeyboardVisible}
           keyboardHeight={keyboardHeight}
-
           loading={loading}
           onSearchSubmit={handleSearch}
           onStopResponse={handleStopResponse}
-
           stopRecording={stopRecording}
           startRecording={startRecording}
           recording={recording}
