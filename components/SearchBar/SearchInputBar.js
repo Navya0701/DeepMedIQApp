@@ -80,13 +80,14 @@ const SearchInputBar = ({
               onPress={recording ? stopRecording : startRecording}
               style={{
                 backgroundColor: recording ? 'white' : 'white',
-                padding: 20,
+                padding: 15,
+                marginLeft: 10,
                 borderRadius: 50,
               }}>
                {!recording ? (
-                <Image source={require("../../assets/images/mic.png")}  />
+                <Image source={require("../../assets/images/mic.png")} style={{ width: 20, height: 20 }} />
               ) : (
-                <Image source={require("../../assets/images/stop.png")}  />
+                <Image source={require("../../assets/images/stop.png")} style={{ width: 20, height: 20 }} />
               )}
           </TouchableOpacity>
         </View>
