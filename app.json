@@ -16,12 +16,7 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "permissions": [
-        "RECORD_AUDIO",
-        "INTERNET",
-        "MODIFY_AUDIO_SETTINGS"
-      ]
+      }
     },
     "web": {
       "bundler": "metro",
