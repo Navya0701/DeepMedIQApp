@@ -66,17 +66,20 @@ const Sidebar = ({
       >
         <View style={styles.mainContainer}>
           <View style={styles.header}>
-            <TouchableOpacity
-              onPress={onNewSession}
-              style={{ marginRight: 8 }}
-              accessibilityLabel="New conversation"
-            >
-              <Image
-                source={require("../../assets/images/DeepMedIQ-long.jpeg")}
-                style={styles.logo}
-                resizeMode="contain"
+            <View style={styles.newChatContainer}>
+              <Image 
+                source={require("../../assets/images/DeepMedIQ-small.jpeg")}
+                style={styles.logoIcon}
               />
-            </TouchableOpacity>
+              <TouchableOpacity
+                onPress={onNewSession}
+                style={styles.newChatButton}
+                accessibilityLabel="New conversation"
+              >
+                <MaterialIcons name="add" size={24} color="fff" />
+                <Text style={styles.newChatText}>New Chat</Text>
+              </TouchableOpacity>
+            </View>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <TouchableOpacity
                 onPress={onClearAllSessions}
@@ -199,22 +202,37 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
+    backgroundColor: "rgba(0, 0, 0, 0.5)",  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 20,
     paddingTop: Platform.OS === "ios" ? 40 : 20,
-  },
-  logo: {
-    width: 180,
-    height: 40,
-    marginLeft: 8,
+  },  newChatButton: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "#fff",
-    borderRadius: 40,
-    padding: 8,
+    borderRadius: 8,
+    padding: 10,
+    marginRight: 8,
+  },
+  newChatContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 8,
+  },
+  logoIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginRight: 10,
+  },
+  newChatText: {
+    color: "ffff",
+    fontWeight: "bold",
+    marginLeft: 5,
+    fontSize: 16,
   },
   closeButton: {
     padding: 10,

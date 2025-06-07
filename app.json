@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "MedCopilotR",
-    "slug": "MedCopilotR",
+    "name": "DeepMedIQ",
+    "slug": "DeepMedIQ",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -17,11 +17,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": [
-        "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
-      ],
-      "package": "com.anonymous.MedCopilotR"
+      "package": "com.medcopilot.deepmediq"
     },
     "web": {
       "bundler": "metro",
