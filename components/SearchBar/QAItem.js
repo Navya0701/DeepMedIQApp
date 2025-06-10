@@ -1,3 +1,4 @@
+// QAItem.js
 import React, { useState, useEffect, useRef } from "react";
 import {
   View,
@@ -6,9 +7,8 @@ import {
   Image,
   Animated,
   StyleSheet,
-  Easing,
 } from "react-native";
-import FeedbackModalComponent from "./FeedbackModalComponent"; // Adjust the import based on your file structure
+import FeedbackModalComponent from "./FeedbackModalComponent";
 import loadingGif2 from "../../assets/images/loadingimage-2.gif";
 
 const QAItem = ({
@@ -23,7 +23,6 @@ const QAItem = ({
   const [feedbackVisible, setFeedbackVisible] = useState(false);
   const [feedbackType, setFeedbackType] = useState(null);
 
-  // Best-of-best animation: springy, fade, scale, slide, shadow pop
   const cardAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     if (qa.answer && qa.answer !== "loading") {
@@ -46,129 +45,116 @@ const QAItem = ({
   const handleDislike = () => {
     setFeedbackType("dislike");
     setFeedbackVisible(true);
-  };  // Format answer text with HTML-style formatting
-  const formatText = (text) => {
-    if (!text) return null;
-    
-    // Process the text with the new formatter
-    const formatAnswer = (text) => {
-      return text
-      .replace(/\n/g, "<br>") // Replace \n with <br>
-      .replace(/\((.*?)\)/g, "<strong>$1</strong>") // Wrap text between () with <strong>
-      .replace(/\\(.?)\\*/g, "<strong>$1</strong>") // Wrap text starting with ### with <h1> and <strong>
-      .replace(/\#\#(.*?)/g, "<strong>$1</strong>") // Wrap text starting with ** with <span> for blue italicized text
-      .replace(/\#\#\#(.*?)/g, "<span style='color: blue; font-style: italic;'>$1</span>"); // Wrap text starting with ** with <span> for blue italicized text
-    };
-    
-    // Convert HTML-like formatted text to React Native components
-    const htmlToComponents = (htmlText) => {
-      if (!htmlText) return null;
-      
-      // Split by <br> tags to handle line breaks
-      const lines = htmlText.split("<br>");
-      
-      return (
-        <View>
-          {lines.map((line, lineIndex) => {
-            // Process the individual formatting in each line
-            let components = [];
-            let currentText = "";
-            let currentIndex = 0;
-            
-            // Process the line to extract formatted sections
-            while (currentIndex < line.length) {
-              // Check for <strong> tags
-              if (line.substring(currentIndex, currentIndex + 8) === "<strong>") {
-                // Add any accumulated text before the tag
-                if (currentText) {
-                  components.push(
-                    <Text key={`text-${lineIndex}-${components.length}`} style={styles.regularText}>
-                      {currentText}
-                    </Text>
-                  );
-                  currentText = "";
-                }
-                
-                // Find closing tag
-                const endIndex = line.indexOf("</strong>", currentIndex);
-                if (endIndex !== -1) {
-                  // Extract and add the bold text
-                  const boldText = line.substring(currentIndex + 8, endIndex);
-                  components.push(
-                    <Text key={`bold-${lineIndex}-${components.length}`} style={styles.boldText}>
-                      {boldText}
-                    </Text>
-                  );
-                  currentIndex = endIndex + 9; // Move past the closing tag
-                  continue;
-                }
-              }
-              
-              // Check for span with style tag (blue italic text)
-              if (line.substring(currentIndex, currentIndex + 48) === "<span style='color: blue; font-style: italic;'>") {
-                // Add any accumulated text before the tag
-                if (currentText) {
-                  components.push(
-                    <Text key={`text-${lineIndex}-${components.length}`} style={styles.regularText}>
-                      {currentText}
-                    </Text>
-                  );
-                  currentText = "";
-                }
-                
-                // Find closing tag
-                const endIndex = line.indexOf("</span>", currentIndex);
-                if (endIndex !== -1) {
-                  // Extract and add the styled text
-                  const styledText = line.substring(currentIndex + 48, endIndex);
-                  components.push(
-                    <Text key={`blue-${lineIndex}-${components.length}`} style={styles.hashtagText}>
-                      {styledText}
-                    </Text>
-                  );
-                  currentIndex = endIndex + 7; // Move past the closing tag
-                  continue;
-                }
-              }
-              
-              // Accumulate regular text
-              currentText += line[currentIndex];
-              currentIndex++;
-            }
-            
-            // Add any remaining text
-            if (currentText) {
-              components.push(
-                <Text key={`text-${lineIndex}-${components.length}`} style={styles.regularText}>
-                  {currentText}
-                </Text>
-              );
-            }
-            
-            // Return the line wrapped in a View
-            return (
-              <View key={`line-${lineIndex}`} style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 8 }}>
-                {components}
-              </View>
-            );
-          })}
-        </View>
-      );
-    };
-    
-    const formattedHtml = formatAnswer(text);
-    return htmlToComponents(formattedHtml);
   };
 
-  // Add rotation animation for loading gif
-  const rotateAnim = useRef(new Animated.Value(0)).current;
+  // Enhanced formatter: preserves all \n, bolds (text), strong for ###, emphasize for **text**
+  const formatText = (text) => {
+    if (!text) return null;
+    // Split by \n, preserving empty lines
+    const lines = text.split('\n');
+    return lines.map((line, idx) => {
+      // If line is empty, render a blank line for spacing
+      if (line.trim() === "") {
+        return <Text key={`empty-${idx}`} style={{marginVertical: 6}}>{' '}</Text>;
+      }
 
+      // ### Header: strong
+      if (line.trim().startsWith('###')) {
+        return (
+          <Text
+            key={idx}
+            style={{ fontSize: 20, fontWeight: 'bold', color: '#222', marginVertical: 8 }}
+          >
+            {line.replace(/^\s*###\s*/, '')}
+          </Text>
+        );
+      }
+
+      // Bullets for - or *
+      if (line.trim().match(/^[-*]\s/)) {
+        // Remove bullet, format rest of line
+        const bulletContent = line.replace(/^[-*]\s*/, '');
+        return (
+          <View key={idx} style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+            <Text style={{ fontSize: 16, marginRight: 6 }}>{'\u2022'}</Text>
+            <Text style={{ flex: 1, fontSize: 16 }}>
+              {formatInline(bulletContent, idx)}
+            </Text>
+          </View>
+        );
+      }
+
+      // Regular line with inline formatting
+      return (
+        <Text key={idx} style={{ fontSize: 16, color: '#333', lineHeight: 26 }}>
+          {formatInline(line, idx)}
+        </Text>
+      );
+    });
+  };
+
+  // Inline formatter: bold (text), emphasize **text**
+  const formatInline = (line, parentIdx) => {
+    const result = [];
+    let i = 0;
+    let keyCounter = 0;
+    while (i < line.length) {
+      // Bold for (content)
+      if (line[i] === '(') {
+        let end = line.indexOf(')', i + 1);
+        if (end !== -1) {
+          result.push(
+            <Text
+              key={`bold-${parentIdx}-${keyCounter++}`}
+              style={{ fontWeight: 'bold' }}
+            >
+              {line.substring(i + 1, end)}
+            </Text>
+          );
+          i = end + 1;
+          continue;
+        }
+      }
+      // Emphasize for **content**
+      if (line[i] === '*' && line[i + 1] === '*') {
+        let end = line.indexOf('**', i + 2);
+        if (end !== -1) {
+          result.push(
+            <Text
+              key={`emph-${parentIdx}-${keyCounter++}`}
+              style={{ fontStyle: 'italic', color: '#1976D2' }}
+            >
+              {line.substring(i + 2, end)}
+            </Text>
+          );
+          i = end + 2;
+          continue;
+        }
+      }
+      // Normal text until next special
+      let nextSpecial = line.length;
+      const nextParen = line.indexOf('(', i);
+      const nextAster = line.indexOf('**', i);
+      if (nextParen !== -1 && nextParen < nextSpecial) nextSpecial = nextParen;
+      if (nextAster !== -1 && nextAster < nextSpecial) nextSpecial = nextAster;
+      const textSegment = line.substring(i, nextSpecial);
+      if (textSegment) {
+        result.push(
+          <Text key={`plain-${parentIdx}-${keyCounter++}`}>{textSegment}</Text>
+        );
+      }
+      i = nextSpecial === i ? i + 1 : nextSpecial;
+    }
+    return result;
+  };
+
+  const rotateAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     if (qa.answer === "loading") {
       Animated.loop(
         Animated.timing(rotateAnim, {
           toValue: 1,
-          duration: 2000, // Slower rotation (was 1000)
+          duration: 2000,
           useNativeDriver: true,
           isInteraction: false,
         })
@@ -177,7 +163,6 @@ const QAItem = ({
       rotateAnim.stopAnimation();
       rotateAnim.setValue(0);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [qa.answer]);
 
   return (
@@ -319,9 +304,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
   },
-  newMessage: {
-    // Add any specific styling for new messages if needed
-  },
+  newMessage: {},
   questionContainer: {
     padding: 12,
     borderRadius: 8,
@@ -373,22 +356,6 @@ const styles = StyleSheet.create({
   },
   answerTextWrapper: {
     flex: 1,
-  },  regularText: {
-    fontSize: 17,
-    color: "#333",
-    lineHeight: 26,
-  },
-  boldText: {
-    fontSize: 17,
-    fontWeight: "bold",
-    color: "#333",
-    lineHeight: 26,
-  },
-  hashtagText: {
-    fontSize: 17,
-    color: "blue",
-    fontStyle: "italic",
-    lineHeight: 26,
   },
   followupContainer: {
     marginTop: 12,

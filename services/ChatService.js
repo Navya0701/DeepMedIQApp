@@ -38,6 +38,7 @@ export const fetchChatResponse = async (searchQuery, signal) => {
     }
 
     const data = await response.json();
+    console.log(data)
     // Remove all logic that replaces **text** with <B>text</B> or any other formatting
     // Just return the data as is
     return data;
