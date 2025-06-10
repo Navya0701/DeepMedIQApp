@@ -7,7 +7,8 @@
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,    "ios": {
+    "newArchEnabled": true,    
+    "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.medcopilot.deepmediq"
     },
