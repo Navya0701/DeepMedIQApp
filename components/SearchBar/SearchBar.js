@@ -8,7 +8,7 @@ import HeaderComponent from "./HeaderComponent";
 import SearchInputBar from "./SearchInputBar";
 import FeedbackModalComponent from "./FeedbackModalComponent";
 import useChatHistory from "../../hooks/useChatHistory";
-import useAudioRecorder from '../../hooks/useAudioRecorder';
+import useAudioRecorderCustom from '../../hooks/useAudioRecorder';
 import useKeyboardManager from '../../hooks/useKeyboardManager';
 import { fetchChatResponse } from "../../services/ChatService";
 
@@ -18,7 +18,7 @@ const SearchBar = () => {
   const [loading, setLoading] = useState(false);
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
   const [thinkingText, setThinkingText] = useState("");
-  const { recording, isTranscribing, startRecording, stopRecording, transcript } = useAudioRecorder();
+  const { isRecording, isTranscribing, startRecording, stopRecording, transcript } = useAudioRecorderCustom();
   const scrollViewRef = useRef(null);
   const questionRefs = useRef({});
   const abortControllerRef = useRef(null);
@@ -129,7 +129,7 @@ const SearchBar = () => {
           onStopResponse={() => abortControllerRef.current?.abort()}
           stopRecording={stopRecording}
           startRecording={startRecording}
-          recording={recording}
+          isRecording={isRecording}
           isTranscribing={isTranscribing}
         />
         <FeedbackModalComponent

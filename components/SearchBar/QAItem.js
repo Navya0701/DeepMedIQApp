@@ -46,86 +46,118 @@ const QAItem = ({
   const handleDislike = () => {
     setFeedbackType("dislike");
     setFeedbackVisible(true);
-  };
-  // Format text: bold for **text** or (text), bullets for lines starting with *
-  // Enhanced formatText: if both ** and () are present in a line, only bold the outermost (first-appeared) one, leave inner as plain text
+  };  // Format answer text with HTML-style formatting
   const formatText = (text) => {
     if (!text) return null;
-    const lines = text.split("\n");
-    return lines.map((line, idx) => {
-      // Header if line starts with ###
-      if (line.trim().startsWith("###")) {
-        return (
-          <Text key={idx} style={{ fontSize: 22, fontWeight: "600", color: "#333", marginVertical: 8 }}>
-            {line.replace(/^\s*###\s*/, "")}
-          </Text>
-        );
-      }
-      // Bullet point if line starts with *
-      if (line.trim().startsWith("*")) {
-        return (
-          <View
-            key={idx}
-            style={{ flexDirection: "row", alignItems: "flex-start" }}
-          >
-            <Text style={{ fontSize: 16, marginRight: 6 }}>{"\u2022"}</Text>
-            <Text style={{ flex: 1, fontSize: 16 }}>
-              {line.replace(/^\s*\*\s*/, "")}
-            </Text>
-          </View>
-        );
-      }
-      // Bold logic: only bold the outermost (first-appeared) of **...** or (...)
-      let out = [];
-      let i = 0;
-      while (i < line.length) {
-        if (line[i] === "*" && line[i + 1] === "*") {
-          // Found **
-          let end = line.indexOf("**", i + 2);
-          if (end !== -1) {
-            out.push(
-              <Text key={i} style={{ fontWeight: "bold", fontSize: 16 }}>
-                {line.substring(i + 2, end)}
-              </Text>
-            );            i = end + 2;
-            continue;
-          }
-        }
-        if (line[i] === "(") {
-          let end = line.indexOf(")", i + 1);
-          if (end !== -1) {
-            out.push(
-              <Text key={i} style={{ fontSize: 16 }}>
-                {line.substring(i + 1, end)}
-              </Text>
-            );
-            i = end + 1;
-            continue;
-          }
-        }
-        // Otherwise, just push the character wrapped in Text component
-        let nextSpecial = Math.min(
-          ...["**", "("].map((token) => {
-            let idx = line.indexOf(token, i);
-            return idx === -1 ? line.length : idx;
-          })
-        );
-        if (nextSpecial === i) nextSpecial = i + 1;
-        const textSegment = line.substring(i, nextSpecial);
-        if (textSegment) {
-          out.push(
-            <Text key={`text-${i}`} style={{ fontSize: 16 }}>
-              {textSegment}
-            </Text>
-          );
-        }        i = nextSpecial;      }
+    
+    // Process the text with the new formatter
+    const formatAnswer = (text) => {
+      return text
+      .replace(/\n/g, "<br>") // Replace \n with <br>
+      .replace(/\((.*?)\)/g, "<strong>$1</strong>") // Wrap text between () with <strong>
+      .replace(/\\(.?)\\*/g, "<strong>$1</strong>") // Wrap text starting with ### with <h1> and <strong>
+      .replace(/\#\#(.*?)/g, "<strong>$1</strong>") // Wrap text starting with ** with <span> for blue italicized text
+      .replace(/\#\#\#(.*?)/g, "<span style='color: blue; font-style: italic;'>$1</span>"); // Wrap text starting with ** with <span> for blue italicized text
+    };
+    
+    // Convert HTML-like formatted text to React Native components
+    const htmlToComponents = (htmlText) => {
+      if (!htmlText) return null;
+      
+      // Split by <br> tags to handle line breaks
+      const lines = htmlText.split("<br>");
       
       return (
-        <View key={idx} style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-          {out}
+        <View>
+          {lines.map((line, lineIndex) => {
+            // Process the individual formatting in each line
+            let components = [];
+            let currentText = "";
+            let currentIndex = 0;
+            
+            // Process the line to extract formatted sections
+            while (currentIndex < line.length) {
+              // Check for <strong> tags
+              if (line.substring(currentIndex, currentIndex + 8) === "<strong>") {
+                // Add any accumulated text before the tag
+                if (currentText) {
+                  components.push(
+                    <Text key={`text-${lineIndex}-${components.length}`} style={styles.regularText}>
+                      {currentText}
+                    </Text>
+                  );
+                  currentText = "";
+                }
+                
+                // Find closing tag
+                const endIndex = line.indexOf("</strong>", currentIndex);
+                if (endIndex !== -1) {
+                  // Extract and add the bold text
+                  const boldText = line.substring(currentIndex + 8, endIndex);
+                  components.push(
+                    <Text key={`bold-${lineIndex}-${components.length}`} style={styles.boldText}>
+                      {boldText}
+                    </Text>
+                  );
+                  currentIndex = endIndex + 9; // Move past the closing tag
+                  continue;
+                }
+              }
+              
+              // Check for span with style tag (blue italic text)
+              if (line.substring(currentIndex, currentIndex + 48) === "<span style='color: blue; font-style: italic;'>") {
+                // Add any accumulated text before the tag
+                if (currentText) {
+                  components.push(
+                    <Text key={`text-${lineIndex}-${components.length}`} style={styles.regularText}>
+                      {currentText}
+                    </Text>
+                  );
+                  currentText = "";
+                }
+                
+                // Find closing tag
+                const endIndex = line.indexOf("</span>", currentIndex);
+                if (endIndex !== -1) {
+                  // Extract and add the styled text
+                  const styledText = line.substring(currentIndex + 48, endIndex);
+                  components.push(
+                    <Text key={`blue-${lineIndex}-${components.length}`} style={styles.hashtagText}>
+                      {styledText}
+                    </Text>
+                  );
+                  currentIndex = endIndex + 7; // Move past the closing tag
+                  continue;
+                }
+              }
+              
+              // Accumulate regular text
+              currentText += line[currentIndex];
+              currentIndex++;
+            }
+            
+            // Add any remaining text
+            if (currentText) {
+              components.push(
+                <Text key={`text-${lineIndex}-${components.length}`} style={styles.regularText}>
+                  {currentText}
+                </Text>
+              );
+            }
+            
+            // Return the line wrapped in a View
+            return (
+              <View key={`line-${lineIndex}`} style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 8 }}>
+                {components}
+              </View>
+            );
+          })}
         </View>
       );
-    });
+    };
+    
+    const formattedHtml = formatAnswer(text);
+    return htmlToComponents(formattedHtml);
   };
 
   // Add rotation animation for loading gif
@@ -341,27 +373,21 @@ const styles = StyleSheet.create({
   },
   answerTextWrapper: {
     flex: 1,
-  },
-  regularText: {
-    fontSize: 17, // Increased from 16
-    color: "#333",
-    lineHeight: 26, // Increased line height
-  },
-  boldText: {
-    fontSize: 17, // Matches regular text size
-    fontWeight: "bold",
+  },  regularText: {
+    fontSize: 17,
     color: "#333",
     lineHeight: 26,
   },
-  parenthesesText: {
+  boldText: {
     fontSize: 17,
-    fontStyle: "italic",
+    fontWeight: "bold",
     color: "#333",
     lineHeight: 26,
   },
   hashtagText: {
     fontSize: 17,
-    color: "#CB2323",
+    color: "blue",
+    fontStyle: "italic",
     lineHeight: 26,
   },
   followupContainer: {

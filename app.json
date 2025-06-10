@@ -7,8 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "ios": {
+    "newArchEnabled": true,    "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.medcopilot.deepmediq"
     },
@@ -36,7 +35,7 @@
         }
       ],
       [
-        "expo-av",
+        "expo-audio",
         {
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
         }

@@ -21,7 +21,7 @@ const SearchInputBar = ({
   onStopResponse,
   startRecording,
   stopRecording,
-  recording,
+  isRecording,
   isTranscribing
 }) => {
   const [isFocused, setIsFocused] = React.useState(false);
@@ -64,7 +64,7 @@ const SearchInputBar = ({
             returnKeyType="send"
           />
           <TouchableOpacity
-            onPress={recording ? stopRecording : (!isTranscribing ? startRecording : undefined)}
+            onPress={isRecording ? stopRecording : (!isTranscribing ? startRecording : undefined)}
             style={{
               backgroundColor: 'white',
               padding: 15,
@@ -79,7 +79,7 @@ const SearchInputBar = ({
           >
             {isTranscribing ? (
               <ActivityIndicator size="small" color="#1976D2" />
-            ) : !recording ? (
+            ) : !isRecording ? (
               <Image source={require("../../assets/images/mic.png")} style={{ width: 20, height: 20 }} />
             ) : (
               <Image source={require("../../assets/images/stop.png")} style={{ width: 20, height: 20 }} />
@@ -104,16 +104,12 @@ const SearchInputBar = ({
             accessible
             accessibilityLabel="Send"
           >
-            {loading ? (
-              <View style={styles.spinnerStyle}>
-                <View style={styles.spinnerCircle} />
-              </View>
-            ) : (
+            
               <Image
                 source={require("../../assets/images/DeepMedIQ-small.jpeg")}
                 style={styles.searchButtonImage}
               />
-            )}
+        
           </TouchableOpacity>
         </Animated.View>
       </View>
