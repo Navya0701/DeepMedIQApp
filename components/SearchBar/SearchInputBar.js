@@ -51,6 +51,8 @@ const SearchInputBar = ({
             placeholderTextColor="#889"
             value={query}
             multiline
+            numberOfLines={3}
+            maxLength={500}
             onChangeText={onQueryChange}
             onSubmitEditing={onSearchSubmit}
             onFocus={() => setIsFocused(true)}
@@ -156,6 +158,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 0,
     color: "#222",
+    maxHeight: 72, // Approximately 3 lines (16px font * 1.4 line height * 3 lines + padding)
+    textAlignVertical: "top",
   },
   searchButton: {
     marginLeft: 12,

@@ -7,6 +7,7 @@ import {
   Image,
   Animated,
   StyleSheet,
+  TextInput,
 } from "react-native";
 import FeedbackModalComponent from "./FeedbackModalComponent";
 import loadingGif2 from "../../assets/images/loadingimage-2.gif";
@@ -22,6 +23,8 @@ const QAItem = ({
 }) => {
   const [feedbackVisible, setFeedbackVisible] = useState(false);
   const [feedbackType, setFeedbackType] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedQuestion, setEditedQuestion] = useState(qa.question);
 
   const cardAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -45,6 +48,22 @@ const QAItem = ({
   const handleDislike = () => {
     setFeedbackType("dislike");
     setFeedbackVisible(true);
+  };
+
+  const handleEditQuestion = () => {
+    setIsEditing(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (editedQuestion.trim() && editedQuestion.trim() !== qa.question) {
+      onFollowupClick(editedQuestion.trim());
+    }
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditedQuestion(qa.question);
+    setIsEditing(false);
   };
 
   // Enhanced formatter: preserves all \n, bolds (text), strong for ###, emphasize for **text**
@@ -174,7 +193,45 @@ const QAItem = ({
       ]}
     >
       <View ref={questionRef} style={styles.questionContainer}>
-        <Text style={styles.questionText}>{qa.question}</Text>
+        {isEditing ? (
+          <View style={styles.editContainer}>
+            <TextInput
+              style={styles.editInput}
+              value={editedQuestion}
+              onChangeText={setEditedQuestion}
+              multiline
+              placeholder="Edit your question..."
+              blurOnSubmit={false}
+              scrollEnabled={false}
+            />
+            <View style={styles.editButtons}>
+              <TouchableOpacity onPress={handleCancelEdit} style={styles.cancelButton}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleSaveEdit} style={styles.saveButton}>
+                <Text style={styles.saveButtonText}>Ask</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : (
+          <>
+            <Text style={styles.questionText}>{qa.question}</Text>
+            <View style={styles.questionFeedbackIcons}>
+              <TouchableOpacity onPress={() => onCopy(qa.question)}>
+                <Image
+                  source={require("../../assets/images/copyimage.png")}
+                  style={styles.feedbackIcon}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleEditQuestion} style={styles.editButton}>
+                <Image
+                  source={require("../../assets/images/edit.png")}
+                  style={[styles.feedbackIcon, styles.editIcon]}
+                />
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
       </View>
       {qa.answer === "loading" ? (
         <View style={styles.loadingContainer}>
@@ -316,6 +373,65 @@ const styles = StyleSheet.create({
   questionText: {
     fontSize: 16,
     color: "#333",
+  },
+  questionFeedbackIcons: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 8,
+    marginBottom: 0,
+  },
+  editContainer: {
+    flex: 1,
+  },
+  editInput: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: "#333",
+    height: 80,
+    textAlignVertical: "top",
+    backgroundColor: "#fff",
+  },
+  editButtons: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 12,
+    gap: 10,
+  },
+  cancelButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    backgroundColor: "#fff",
+  },
+  cancelButtonText: {
+    color: "#666",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  saveButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+    backgroundColor: "#1976D2",
+  },
+  saveButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  editButton: {
+    padding: 2,
+    borderRadius: 4,
+    marginLeft: 0,
+  },
+  editIcon: {
+    tintColor: "#1976D2",
+    opacity: 0.8,
   },
   loadingContainer: {
     alignItems: "center",
