@@ -46,9 +46,7 @@
     "experiments": {
       "typedRoutes": true
     },
-    "extra": {
-      "EXPO_PUBLIC_API_URL": "https://mcapisvc2.azurewebsites.net",
-      "DEEPGRAM_API_KEY": "cf9dccc76a3fb206228317fde483a522433880f5"
-    }
+   "extra": {}
+
   }
 }

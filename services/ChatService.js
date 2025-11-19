@@ -1,7 +1,8 @@
 import Constants from "expo-constants";
 import { Alert } from "react-native";
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL;
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
 
 export const fetchChatResponse = async (searchQuery, signal) => {
   if (!API_URL) {
@@ -9,46 +10,55 @@ export const fetchChatResponse = async (searchQuery, signal) => {
     console.error("API URL is not configured.");
     return null;
   }
+
   try {
-    const response = await fetch(
-      `${API_URL}/chat?message=${encodeURIComponent(searchQuery)}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({ message: searchQuery }), // Ensure body is correctly stringified
-        signal, // Pass abort signal
-      }
-    );
+    // Build correct GET request URL with question param
+    const url = `${API_URL}/api/v1/testq?question=${encodeURIComponent(
+      searchQuery
+    )}`;
+
+    console.log("Calling API:", url);
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+      signal, // support for abort controller
+    });
 
     if (!response.ok) {
-      // Attempt to get error message from response body
       let errorData = null;
+
       try {
         errorData = await response.json();
       } catch (e) {
-        // Ignore if response is not JSON
+        // Ignore if body isn't JSON
       }
+
       console.error("Chat API response error:", response.status, errorData);
+
       throw new Error(
-        `HTTP error! status: ${response.status}, message: ${errorData?.message || response.statusText}`
+        `HTTP error! status: ${response.status}, message: ${
+          errorData?.message || response.statusText
+        }`
       );
     }
 
+    // Success
     const data = await response.json();
-    console.log(data)
-    // Remove all logic that replaces **text** with <B>text</B> or any other formatting
-    // Just return the data as is
-    return data;
+    console.log("API Response:", data);
+
+    return data; // return response as-is
   } catch (error) {
     if (error.name === "AbortError") {
-      // Silently ignore abort errors (user stopped response)
+      // User cancelled query — do nothing
       return null;
     }
+
     console.error("Fetch chat response error:", error);
     Alert.alert("Error", `Failed to get chat response: ${error.message}`);
-    return null; // Or throw error to be caught by caller
+
+    return null;
   }
 };

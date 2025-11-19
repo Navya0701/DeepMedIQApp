@@ -2,7 +2,8 @@ import axios from 'axios';
 import Constants from 'expo-constants';
 import { Alert } from 'react-native';
 
-const DEEPGRAM_API_KEY = Constants.expoConfig?.extra?.DEEPGRAM_API_KEY;
+const DEEPGRAM_API_KEY = process.env.EXPO_PUBLIC_DEEPGRAM_API_KEY;
+
 
 export const transcribeAudio = async (audioUri) => {
   console.log('Transcribing audio from URI:', audioUri);
