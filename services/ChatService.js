@@ -11,6 +11,8 @@ export const fetchChatResponse = async (searchQuery, signal) => {
   }
 
   try {
+    // Debug: log which API URL we're using
+    console.log("ChatService: using API_URL=", API_URL);
     // Build correct GET request URL with question param
     const url = `${API_URL}/api/v1/testq?question=${encodeURIComponent(
       searchQuery
@@ -46,17 +48,37 @@ export const fetchChatResponse = async (searchQuery, signal) => {
 
     // Success
     const data = await response.json();
-    console.log("API Response:", data);
+    console.log("ChatService: raw API response:", data);
 
-    // Return formatted result with follow-up questions included
+    // Normalize answer from multiple possible keys
+    const normalizedAnswer =
+      data?.answer || data?.response || data?.text || data?.output || "";
+
+    // Normalize follow-ups from multiple possible keys and shapes
+    const rawFollowups =
+      data?.followup_questions || data?.followupQuestions || data?.followups || data?.suggested_questions || [];
+
+    // Ensure followups is an array of strings or objects
+    const normalizedFollowups = Array.isArray(rawFollowups)
+      ? rawFollowups
+      : typeof rawFollowups === "string"
+      ? [rawFollowups]
+      : [];
+
     return {
-      answer: data.answer || "",
-      citations: data.citations || [],
-      followup_questions: data.followup_questions || [],
-      cost: data.cost || 0,
-      tokens: data.tokens || 0,
-      timestamp: data.timestamp || "",
-      question: data.question || searchQuery,
+      // primary normalized fields (camelCase)
+      answer: normalizedAnswer,
+      citations: data?.citations || data?.sources || [],
+      followupQuestions: normalizedFollowups,
+      // keep snake_case for backward compatibility with existing UI
+      followup_questions: normalizedFollowups,
+      cost: data?.cost || 0,
+      tokens: data?.tokens || 0,
+      timestamp: data?.timestamp || "",
+      question: data?.question || searchQuery,
+      // raw: keep original payload for debugging
+      raw: data,
+      status: response.status,
     };
   } catch (error) {
     if (error.name === "AbortError") {
