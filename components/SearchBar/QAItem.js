@@ -508,6 +508,13 @@ const styles = StyleSheet.create({
   },
   followupContainer: {
     marginTop: 12,
+    padding: 8,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#eee',
+    // ensure the followups sit visually separate from the answer card
+    marginBottom: 8,
   },
   followupHeading: {
     fontSize: 14,
@@ -517,11 +524,12 @@ const styles = StyleSheet.create({
   },
   followupButton: {
     backgroundColor: '#fff',
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingHorizontal: 12,
-    borderRadius: 12,
-    marginBottom: 8,
-    alignSelf: 'flex-start',
+    borderRadius: 10,
+    marginVertical: 6,
+    alignSelf: 'stretch',
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
@@ -541,6 +549,8 @@ const styles = StyleSheet.create({
     color: '#CB2323',
     fontSize: 16,
     fontWeight: '700',
+    // keep pointer vertically centered
+    alignSelf: 'center',
   },
   followupPointerActive: {
     color: '#9B1A1A',
@@ -548,7 +558,8 @@ const styles = StyleSheet.create({
   followupButtonText: {
     color: '#333',
     fontSize: 15,
-    maxWidth: 360,
+    flex: 1,
+    flexWrap: 'wrap',
   },
   followupButtonTextActive: {
     color: '#CB2323',
