@@ -2,6 +2,8 @@ import Constants from "expo-constants";
 import { Alert } from "react-native";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
+const API_URL2 = process.env.EXPO_PUBLIC_API_URL2;
+const API_URL3 = process.env.EXPO_PUBLIC_API_URL3;
 
 export const fetchChatResponse = async (searchQuery, signal) => {
   if (!API_URL) {
@@ -14,10 +16,12 @@ export const fetchChatResponse = async (searchQuery, signal) => {
     // Debug: log which API URL we're using
     console.log("ChatService: using API_URL=", API_URL);
     // Build correct GET request URL with question param
-    const url = `${API_URL}/api/v1/testq?question=${encodeURIComponent(
+    const url = `${API_URL}/api/query?question=${encodeURIComponent(
       searchQuery
     )}`;
-
+    const url_deepthinking = `${API_URL2}/api/v1/testq?question=${encodeURIComponent(
+      searchQuery
+    )}`;
     console.log("Calling API:", url);
 
     const response = await fetch(url, {
@@ -46,8 +50,18 @@ export const fetchChatResponse = async (searchQuery, signal) => {
       );
     }
 
-    // Success
-    const data = await response.json();
+    // Success - attempt to parse JSON but handle non-JSON (HTML) responses gracefully
+    const contentType = response.headers.get("content-type") || "";
+    let data;
+    if (contentType.includes("application/json") || contentType.includes("text/json")) {
+      data = await response.json();
+    } else {
+      // Non-JSON response (often an HTML error page). Capture the text for debugging.
+      const textBody = await response.text();
+      console.error("ChatService: expected JSON but received:", textBody.substring(0, 200));
+      // Surface a clearer error to the app
+      throw new Error("Server returned non-JSON response. Check the API endpoint or logs.");
+    }
     console.log("ChatService: raw API response:", data);
 
     // Normalize answer from multiple possible keys
