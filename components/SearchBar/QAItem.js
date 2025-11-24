@@ -8,6 +8,8 @@ import {
   Animated,
   StyleSheet,
   TextInput,
+  Pressable,
+  Platform,
 } from "react-native";
 import FeedbackModalComponent from "./FeedbackModalComponent";
 import loadingGif2 from "../../assets/images/loadingimage-2.gif";
@@ -21,6 +23,33 @@ const QAItem = ({
   questionRef,
   showSeparator,
 }) => {
+  // Small interactive followup pill component
+  const FollowupPill = ({ text, onPress }) => {
+    const [active, setActive] = React.useState(false);
+    return (
+      <Pressable
+        onPress={() => onPress(text)}
+        onPressIn={() => setActive(true)}
+        onPressOut={() => setActive(false)}
+        onHoverIn={() => setActive(true)}
+        onHoverOut={() => setActive(false)}
+        android_ripple={{ color: '#fdecea' }}
+        style={({ pressed }) => [
+          styles.followupButton,
+          (active || pressed) && styles.followupButtonActive,
+        ]}
+      >
+        <Text style={[styles.followupPointer, active && styles.followupPointerActive]}>›</Text>
+        <Text
+          numberOfLines={2}
+          ellipsizeMode="tail"
+          style={[styles.followupButtonText, active && styles.followupButtonTextActive, Platform.OS === 'web' && { cursor: 'pointer' }]}
+        >
+          {text}
+        </Text>
+      </Pressable>
+    );
+  };
   const [feedbackVisible, setFeedbackVisible] = useState(false);
   const [feedbackType, setFeedbackType] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -305,17 +334,21 @@ const QAItem = ({
 
           {qa.followupQuestions?.length > 0 && (
             <View style={styles.followupContainer}>
-              {qa.followupQuestions.map((followup, fIndex) => (
-                <TouchableOpacity
-                  key={`${qa.id}-followup-${fIndex}`}
-                  style={styles.followupButton}
-                  onPress={() => onFollowupClick(followup.question)}
-                >
-                  <Text style={styles.followupButtonText}>
-                    {followup.question}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              <Text style={styles.followupHeading}>Followup Questions</Text>
+              {qa.followupQuestions.map((followup, fIndex) => {
+                const text =
+                  typeof followup === "string"
+                    ? followup
+                    : followup?.question || followup?.text || followup?.title || "";
+                if (!text) return null;
+                return (
+                  <FollowupPill
+                    key={`${qa.id}-followup-${fIndex}`}
+                    text={text}
+                    onPress={onFollowupClick}
+                  />
+                );
+              })}
             </View>
           )}
 
@@ -476,17 +509,49 @@ const styles = StyleSheet.create({
   followupContainer: {
     marginTop: 12,
   },
+  followupHeading: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 8,
+  },
   followupButton: {
-    backgroundColor: "#f0f0f0",
+    backgroundColor: '#fff',
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 15,
-    marginBottom: 6,
-    alignSelf: "flex-start",
+    borderRadius: 12,
+    marginBottom: 8,
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#eee',
+  },
+  followupButtonActive: {
+    borderColor: '#CB2323',
+    shadowColor: '#CB2323',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+    transform: [{ translateY: -1 }],
+  },
+  followupPointer: {
+    marginRight: 8,
+    color: '#CB2323',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  followupPointerActive: {
+    color: '#9B1A1A',
   },
   followupButtonText: {
-    color: "#CB2323",
+    color: '#333',
     fontSize: 15,
+    maxWidth: 360,
+  },
+  followupButtonTextActive: {
+    color: '#CB2323',
   },
   feedbackIcons: {
     flexDirection: "row",

@@ -3,7 +3,6 @@ import { Alert } from "react-native";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
-
 export const fetchChatResponse = async (searchQuery, signal) => {
   if (!API_URL) {
     Alert.alert("Error", "API URL is not configured.");
@@ -49,11 +48,19 @@ export const fetchChatResponse = async (searchQuery, signal) => {
     const data = await response.json();
     console.log("API Response:", data);
 
-    return data; // return response as-is
+    // Return formatted result with follow-up questions included
+    return {
+      answer: data.answer || "",
+      citations: data.citations || [],
+      followup_questions: data.followup_questions || [],
+      cost: data.cost || 0,
+      tokens: data.tokens || 0,
+      timestamp: data.timestamp || "",
+      question: data.question || searchQuery,
+    };
   } catch (error) {
     if (error.name === "AbortError") {
-      // User cancelled query — do nothing
-      return null;
+      return null; // user cancelled query
     }
 
     console.error("Fetch chat response error:", error);
