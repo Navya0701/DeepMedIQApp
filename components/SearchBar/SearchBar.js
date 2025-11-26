@@ -18,6 +18,7 @@ const SearchBar = () => {
   const [loading, setLoading] = useState(false);
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
   const [thinkingText, setThinkingText] = useState("");
+  const [deepThinkMode, setDeepThinkMode] = useState(false);
   const { isRecording, isTranscribing, startRecording, stopRecording, transcript } = useAudioRecorderCustom();
   const scrollViewRef = useRef(null);
   const questionRefs = useRef({});
@@ -44,7 +45,7 @@ const SearchBar = () => {
     abortControllerRef.current?.abort();
     const controller = new AbortController(); abortControllerRef.current = controller;
     try {
-      const responseData = await fetchChatResponse(searchQuery, controller.signal);
+      const responseData = await fetchChatResponse(searchQuery, controller.signal, deepThinkMode);
       updateSessionWithAnswer(qaId, responseData?.answer || "Failed to get a valid response from the server.", responseData?.followup_questions || []);
     } catch (error) {
       updateSessionWithError(qaId, error.name === "AbortError" ? "Response stopped by user." : "Error fetching response. Please check your connection.");
@@ -87,7 +88,15 @@ const SearchBar = () => {
           onNewSession={() => { createSession(); setIsSidebarOpen(false); setQuery(""); }}
           onSessionDelete={deleteSession}
           onClearAllSessions={clearAllSessions}
+          deepThinkMode={deepThinkMode}
+          onDeepThinkToggle={setDeepThinkMode}
         />
+        {(!currentSession?.qaHistory?.length && !loading) && (
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.headerTextLine1}>What can DeepMedIQ</Text>
+            <Text style={styles.headerTextLine2}>assist you with?</Text>
+          </View>
+        )}
         <ScrollView
           ref={scrollViewRef}
           contentContainerStyle={[
@@ -148,6 +157,25 @@ const styles = StyleSheet.create({
   scrollContent: { paddingBottom: 100 },
   chatContainer: { flex: 1, paddingBottom: Platform.OS === "ios" ? 20 : 20 },
   historyContainer: { paddingHorizontal: 16, paddingTop: 10 },
+  headerTextContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  headerTextLine1: {
+    fontSize: 28,
+    fontWeight: "500",
+    color: "#d3d3d3",
+    textAlign: "center",
+  },
+  headerTextLine2: {
+    fontSize: 28,
+    fontWeight: "500",
+    color: "#d3d3d3",
+    textAlign: "center",
+    marginTop: 4,
+  },
 });
 
 export default SearchBar;

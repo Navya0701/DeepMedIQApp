@@ -2,24 +2,11 @@ import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 
 const Suggestions = ({ onSuggestionClick }) => {
-  const suggestions = [
-    "What is the best modality to screen for Barrett's esophagus?",
-    "What causes Crohn's?",
-    "What is the treatment for dysplasia?",
-    "What endoscopic procedures are high/low-risk for anticoagulants?"
-  ];
+  const suggestions = [];
 
   return (
     <View style={styles.container}>
-      {suggestions.map((suggestion, index) => (
-        <TouchableOpacity 
-          key={index}
-          style={styles.button}
-          onPress={() => onSuggestionClick(suggestion)}
-        >
-          <Text style={styles.buttonText}>{suggestion}</Text>
-        </TouchableOpacity>
-      ))}
+      {/* No suggestions to display */}
     </View>
   );
 };

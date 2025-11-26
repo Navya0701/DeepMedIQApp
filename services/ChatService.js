@@ -5,8 +5,11 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL;
 const API_URL2 = process.env.EXPO_PUBLIC_API_URL2;
 const API_URL3 = process.env.EXPO_PUBLIC_API_URL3;
 
-export const fetchChatResponse = async (searchQuery, signal) => {
-  if (!API_URL) {
+export const fetchChatResponse = async (searchQuery, signal, deepThinkMode = false) => {
+  // Use Asia API (API_URL2) when DeepThink mode is enabled, otherwise use primary API (API_URL)
+  const selectedURL = deepThinkMode ? API_URL2 : API_URL;
+  
+  if (!selectedURL) {
     Alert.alert("Error", "API URL is not configured.");
     console.error("API URL is not configured.");
     return null;
@@ -14,14 +17,13 @@ export const fetchChatResponse = async (searchQuery, signal) => {
 
   try {
     // Debug: log which API URL we're using
-    console.log("ChatService: using API_URL=", API_URL);
+    console.log("ChatService: using", deepThinkMode ? "DeepThink (Asia)" : "Standard", "API_URL=", selectedURL);
+    
     // Build correct GET request URL with question param
-    const url = `${API_URL}/api/query?question=${encodeURIComponent(
-      searchQuery
-    )}`;
-    const url_deepthinking = `${API_URL2}/api/v1/testq?question=${encodeURIComponent(
-      searchQuery
-    )}`;
+    const url = deepThinkMode 
+      ? `${selectedURL}/api/v1/testq?question=${encodeURIComponent(searchQuery)}`
+      : `${selectedURL}/api/query?question=${encodeURIComponent(searchQuery)}`;
+    
     console.log("Calling API:", url);
 
     const response = await fetch(url, {

@@ -22,14 +22,21 @@ const Sidebar = ({
   onClearAllSessions,
   isVisible,
   onClose,
+  deepThinkMode = false,
+  onDeepThinkToggle,
 }) => {
   const { width } = Dimensions.get("window");
+  const [localDeepThinkMode, setLocalDeepThinkMode] = React.useState(deepThinkMode);
   
   // Animation and flicker-free rendering for sidebar
   const slideAnim = React.useRef(
     new Animated.Value(isVisible ? 0 : -width)
   ).current;
   const [shouldRender, setShouldRender] = React.useState(isVisible);
+
+  React.useEffect(() => {
+    setLocalDeepThinkMode(deepThinkMode);
+  }, [deepThinkMode]);
 
   React.useEffect(() => {
     Animated.timing(slideAnim, {
@@ -95,6 +102,25 @@ const Sidebar = ({
           </View>
 
           <View style={styles.historyContainer}>
+            <View style={styles.deepThinkContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.checkbox,
+                  localDeepThinkMode && styles.checkboxChecked,
+                ]}
+                onPress={() => {
+                  const newMode = !localDeepThinkMode;
+                  setLocalDeepThinkMode(newMode);
+                  onDeepThinkToggle && onDeepThinkToggle(newMode);
+                }}
+              >
+                {localDeepThinkMode && (
+                  <MaterialIcons name="check" size={16} color="#fff" />
+                )}
+              </TouchableOpacity>
+              <Text style={styles.deepThinkLabel}>DeepThink Mode</Text>
+            </View>
+
             <Text style={styles.sectionTitle}>
               Sessions ({sessions.length} items)
             </Text>
@@ -244,6 +270,36 @@ const styles = StyleSheet.create({
   },
   historyContainer: {
     flex: 1,
+  },
+  deepThinkContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    backgroundColor: "#222",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#444",
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: "#666",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  checkboxChecked: {
+    backgroundColor: "#1976D2",
+    borderColor: "#1976D2",
+  },
+  deepThinkLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#fff",
   },
   sectionTitle: {
     fontSize: 18,
