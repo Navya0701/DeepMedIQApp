@@ -7,7 +7,7 @@ const API_URL3 = process.env.EXPO_PUBLIC_API_URL3;
 
 export const fetchChatResponse = async (searchQuery, signal, deepThinkMode = false) => {
   // Use Asia API (API_URL2) when DeepThink mode is enabled, otherwise use primary API (API_URL)
-  const selectedURL = deepThinkMode ? API_URL2 : API_URL;
+  const selectedURL = deepThinkMode ? API_URL3 : API_URL;
   
   if (!selectedURL) {
     Alert.alert("Error", "API URL is not configured.");
