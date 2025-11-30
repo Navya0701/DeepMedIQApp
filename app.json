@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,    
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.medcopilot.deepmediq"
@@ -17,7 +17,11 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.medcopilot.deepmediq"
+      "package": "com.medcopilot.deepmediq",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -46,7 +50,11 @@
     "experiments": {
       "typedRoutes": true
     },
-   "extra": {}
-
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "fd6ff694-d4a1-469f-a758-acf620cde41f"
+      }
+    }
   }
 }

@@ -10,7 +10,8 @@ import FeedbackModalComponent from "./FeedbackModalComponent";
 import useChatHistory from "../../hooks/useChatHistory";
 import useAudioRecorderCustom from '../../hooks/useAudioRecorder';
 import useKeyboardManager from '../../hooks/useKeyboardManager';
-import { fetchChatResponse } from "../../services/ChatService";
+import { fetchChatResponse, saveMessage } from "../../services/ChatService";
+
 
 const SearchBar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -37,22 +38,51 @@ const SearchBar = () => {
   useEffect(() => { if(transcript) setQuery(transcript); }, [transcript]);
 
   const handleSearch = async (customQuery) => {
-    const searchQuery = (typeof customQuery === "string" && customQuery.trim()) ? customQuery : query;
-    if (!searchQuery.trim()) return;
-    setQuery(""); Keyboard.dismiss(); setLoading(true); setThinkingText("Thinking...");
-    const qaId = Date.now().toString(); addQuestionToSession(searchQuery, qaId);
-    setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
-    abortControllerRef.current?.abort();
-    const controller = new AbortController(); abortControllerRef.current = controller;
-    try {
-      const responseData = await fetchChatResponse(searchQuery, controller.signal, deepThinkMode);
-      updateSessionWithAnswer(qaId, responseData?.answer || "Failed to get a valid response from the server.", responseData?.followup_questions || []);
-    } catch (error) {
-      updateSessionWithError(qaId, error.name === "AbortError" ? "Response stopped by user." : "Error fetching response. Please check your connection.");
-    } finally {
-      setLoading(false); setThinkingText(""); abortControllerRef.current = null;
-    }
-  };
+  const searchQuery = (typeof customQuery === "string" && customQuery.trim()) ? customQuery : query;
+  if (!searchQuery.trim()) return;
+
+  setQuery("");
+  Keyboard.dismiss();
+  setLoading(true);
+  setThinkingText("Thinking...");
+
+  const qaId = Date.now().toString();
+  addQuestionToSession(searchQuery, qaId);
+
+  // 💾 Save the user's message to Firestore
+  await saveMessage("user", searchQuery);
+
+  setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
+  
+  abortControllerRef.current?.abort();
+  const controller = new AbortController();
+  abortControllerRef.current = controller;
+
+  try {
+    const responseData = await fetchChatResponse(searchQuery, controller.signal, deepThinkMode);
+
+    const answerText = responseData?.answer || "Failed to get a valid response from the server.";
+    const followups = responseData?.followup_questions || [];
+
+    // 💾 Save the bot message to Firestore
+    await saveMessage("assistant", answerText);
+
+    updateSessionWithAnswer(qaId, answerText, followups);
+
+  } catch (error) {
+    updateSessionWithError(
+      qaId,
+      error.name === "AbortError"
+        ? "Response stopped by user."
+        : "Error fetching response. Please check your connection."
+    );
+  } finally {
+    setLoading(false);
+    setThinkingText("");
+    abortControllerRef.current = null;
+  }
+};
+
 
   if (!currentSession) return (
     <SafeAreaView style={styles.safeArea}>
